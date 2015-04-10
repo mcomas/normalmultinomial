@@ -1,0 +1,73 @@
+---
+title: "Likelihood estimation"
+author: "Marc Comas-Cufí"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Likelihood estimation}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Univariate case
+
+## Likelihood estimation 
+
+The likelihood function condition to unobserved $a := alr([c_1, c_2]) = log(c_1/c_2)$ is
+
+\[
+L^*(a) := L^*(a; \mu, \sigma, X1, X2) = \frac{1}{\sigma \sqrt{2 \pi}} e^{( -\frac{(a-\mu)^2}{2 \sigma^2} )} \frac{ (X_1+X_2)!}{ X_1! X_2!} (\frac{e^a}{1+e^a})^{X_1} (\frac{1}{1+e^a})^{X_2}.
+\]
+
+Maximizing $L^*(a)$ with respect $a$ is equivalent to maximize
+
+\[
+L(a) =  e^{( -\frac{(a-\mu)^2}{2 \sigma^2} )} (\frac{e^a}{1+e^a})^{X_1} (\frac{1}{1+e^a})^{X_2}.
+\]
+
+and
+
+\[
+l(a) = -\frac{(a-\mu)^2}{2 \sigma^2} + X_1 log(\frac{e^a}{1+e^a}) +  X_2 log(\frac{1}{1+e^a}).
+\]
+
+#### First and second derivatives
+
+\[
+l'(a) = -\frac{(a-\mu)}{\sigma^2} + X_1 \frac{1}{1 + e^a} + X_2 \frac{-e^a}{1 + e^a}
+\]
+
+and
+
+\[
+l''(a) = -\frac{1}{\sigma^2} -  \frac{e^a (X_1+X_2)}{(1 + e^a)^2}
+\]
+
+# Multivariate case
+
+## Likelihood estimation 
+
+The reduced likelihood function condition to unobserved $a = [a_1, ..., a_k] := alr([c_1, ..., c_K]) = [log(c_1/c_K), ..., log(c_k/c_K)]$ where $K = k +1$ is
+
+
+\[
+l(a) = -\frac{1}{2} (a-\mu)^{T} \Sigma^{-1} (a-\mu) + \sum_{\ell = 1}^k X_\ell log(\frac{e^{a_\ell}}{\kappa}) 
+\]
+
+where $\kappa = 1 + e^{a_1} + \dots + e^{a_k}$.
+
+#### First and second derivatives
+
+\[
+\frac{\partial l(a)}{\partial a_i} = - \sum_{\ell=1}^k (a_i-\mu_i) \Sigma^{-1}_{(i,\ell)} 
++ X_i \; \frac{\kappa-e^{a_i}}{\kappa} 
++ \sum_{\ell=1, \ell \neq i}^K X_{\ell}\; \frac{-e^{a_i}}{\kappa} 
+\]
+
+\[
+\frac{\partial^2 l(a)}{\partial a_i^2} = -\Sigma^{-1}_{(i,i)} - \sum_{\ell=1}^K x_\ell \frac{e^{a_i} (\kappa - e^{a_i})}{\kappa^2}
+\]
+
+\[
+\frac{\partial^2 l(a)}{\partial a_i \partial a_j} = -\Sigma^{-1}_{(i,j)} + \sum_{\ell=1}^K x_\ell \frac{e^{a_i+a_j}}{\kappa^2}
+\]
