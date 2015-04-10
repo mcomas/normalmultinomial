@@ -1,0 +1,13 @@
+Package: normalmultinomial
+Type: Package
+Title: Normal-multinomial distribution
+Version: 1.0
+Date: 2015-04-10
+Maintainer: Marc Comas-Cufí <marc.comas@gmail.com>
+Author: Marc Comas-Cufí <marc.comas@gmail.com>
+Description: normalmultinomial package fits normal-multinomial distribution by maximum likelihood estimation.
+License: GPL
+Imports: Rcpp (>= 0.11.5), mvtnorm
+LinkingTo: Rcpp, RcppArmadillo
+LazyData: true
+VignetteBuilder: knitr
