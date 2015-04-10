@@ -9,7 +9,7 @@
 #'
 #' @export
 rnorm.multinom <- function (N, Mu, Sigma, Size) {
-  M = cbind(exp(rmvnorm(N, Mu, Sigma)), 1)
+  M = cbind(exp(mvtnorm::rmvnorm(N, Mu, Sigma)), 1)
   M = M / apply(M, 1, sum)
   M = cbind(as.numeric(Size), M)
   t(apply(M, 1, function(p) as.numeric(rmultinom(1, as.numeric(p[1]), p[-1])) ))
