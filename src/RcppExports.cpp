@@ -6,22 +6,6 @@
 
 using namespace Rcpp;
 
-// mvf3
-double mvf3(int I, int J, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf3(SEXP ISEXP, SEXP JSEXP, SEXP aSEXP, SEXP muSEXP, SEXP sigma_invSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type I(ISEXP);
-    Rcpp::traits::input_parameter< int >::type J(JSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma_inv(sigma_invSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf3(I, J, a, mu, sigma_inv, x));
-    return __result;
-END_RCPP
-}
 // adjustNormalMultinomial
 List adjustNormalMultinomial(arma::mat X, double eps, int iter, double minSigma);
 RcppExport SEXP normalmultinomial_adjustNormalMultinomial(SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP minSigmaSEXP) {

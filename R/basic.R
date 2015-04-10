@@ -15,10 +15,3 @@ rnorm.multinom <- function (N, Mu, Sigma, Size) {
   t(apply(M, 1, function(p) as.numeric(rmultinom(1, as.numeric(p[1]), p[-1])) ))
 }
 
-#' Finds the mean and covariance of a normal multinomial distribution
-#' 
-#' @param X normal-multinomial sample
-#' @export
-adjustNormalMultinomial <- function(X) {
-  .Call('adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X)
-}

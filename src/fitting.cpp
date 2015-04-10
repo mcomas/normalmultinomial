@@ -38,7 +38,7 @@ double mvf2(int I, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x){
   return log_norm(0) + mult;
 }
 
-// [[Rcpp::export]]
+
 double mvf3(int I, int J, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x){
   int k = a.size();
   
@@ -126,6 +126,10 @@ arma::mat mvloglike(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
   
 }
 
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param X normal-multinomial sample
+//' @export
 // [[Rcpp::export]]
 List adjustNormalMultinomial(arma::mat X,
                              double eps = 1e-04, int iter = 100, double minSigma = 1e-06){
