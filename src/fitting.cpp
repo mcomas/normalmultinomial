@@ -14,15 +14,25 @@ double factorial2(double x){
   return(res);
 }
 
-
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param a aln hidden obeservation
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param x normal-multinomial observation
+//' @return Loglikelihood og oberserved data
+//' @export
+// [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat sigma, arma::vec x){
   int k = a.size();
   arma::mat log_norm = - 0.5 * log(det(sigma)) -0.5 * (a-mu).t() * inv(sigma) * (a-mu);
-  //arma::mat log_mult =
+  double kappa = 1;
+  for(int i = 0; i < k; i++) kappa += exp(a[i]);
+  double multinom = -x[k] * log(kappa);
+  for(int i = 0; i < k; i++) multinom += x[i] * ( a[i] - log(kappa));
+
   
-  return( pow(2 * PI, -0.5 * k) * exp(log_norm(0)));
-  
-  //pow(a-mu, 2) / (2*sigma*sigma) + x * log( exp(a)/(1+exp(a)) ) + x * log( 1/(1+exp(a)) );
+  return( log_norm(0) + multinom );
 }
 
 
@@ -90,8 +100,17 @@ arma::mat loglike2(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
   
 }
 
-
-arma::mat mvloglike(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param A aln hidden obeservations
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param X normal-multinomial observations
+//' @return Loglikelihood oberserved data
+//' @export
+//' 
+// [[Rcpp::export]]
+arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
                     double eps = 1e-08, int iter = 100) {
   //double tol = pow(eps, 2);
   
@@ -104,6 +123,7 @@ arma::mat mvloglike(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
   arma::mat deriv2 = arma::zeros<arma::mat>(k, k);
   arma::mat err = arma::mat(1,1);
   arma::vec step = arma::zeros<arma::vec>(k);
+  
   for(int l=0; l < n; l++){
     int cur_iter = 0;
     arma::rowvec temp = arma::zeros<arma::rowvec>(k);
@@ -140,14 +160,19 @@ List adjustNormalMultinomial(arma::mat X,
   arma::mat A = arma::mat(n,k);
   for(int i = 0; i < n; i++){
     for(int j = 0; j < k; j++){
-      if(X(i,j) != 0 & X(i,k) != 0){
+      if(X(i,j) != 0 && X(i,k) != 0){
         A(i,j) = log(X(i,j)/X(i,k));
       }else{
-        if(X(i,j) == 0){
-          A(i,j) = -2;
+        if(X(i,j) == 0 && X(i,j) == 0){
+          A(i,j) = 0;
         }else{
-          A(i,j) = 2;
+          if(X(i,j) == 0){
+            A(i,j) = log(0.3/X(i,k));
+          }else{
+            A(i,j) = log(X(i,j)/0.3);
+          }          
         }
+
       }
     }
   }
@@ -160,12 +185,12 @@ List adjustNormalMultinomial(arma::mat X,
     cur_iter++;
     tmu = arma::mat(mu);
     tsigma = arma::mat(sigma);
-    A = mvloglike(A, mu.row(0).t(), sigma, X, eps);
-    //mvloglike(A = A, mu = Mu, sigma = Sigma, X = X)
+    A = Mstep(A, mu.row(0).t(), sigma, X, eps);
+    //Mstep(A = A, mu = Mu, sigma = Sigma, X = X)
     mu = mean(A);
     sigma = cov(A);
   } while (arma::norm(mu-tmu) > eps && cur_iter < iter); //sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
   
-  return List::create(mu, sigma, cur_iter);
+  return List::create(mu, sigma, cur_iter, A);
 }
 

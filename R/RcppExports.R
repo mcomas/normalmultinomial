@@ -3,6 +3,18 @@
 
 #' Finds the mean and covariance of a normal multinomial distribution
 #' 
+#' @param a aln hidden obeservation
+#' @param mean parameter for the mean in a aln-normal distribution
+#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param x normal-multinomial observation
+#' @return Loglikelihood og oberserved data
+#' @export
+mvf <- function(a, mu, sigma, x) {
+    .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, sigma, x)
+}
+
+#' Finds the mean and covariance of a normal multinomial distribution
+#' 
 #' @param X normal-multinomial sample
 #' @export
 adjustNormalMultinomial <- function(X, eps = 1e-04, iter = 100L, minSigma = 1e-06) {
