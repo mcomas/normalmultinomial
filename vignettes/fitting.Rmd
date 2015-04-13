@@ -9,41 +9,13 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-# Univariate case
-
-## Likelihood estimation 
-
-The likelihood function condition to unobserved $a := alr([c_1, c_2]) = log(c_1/c_2)$ is
-
+The probability density function of a Normal-multinomial distribution is given by
 \[
-L^*(a) := L^*(a; \mu, \sigma, X1, X2) = \frac{1}{\sigma \sqrt{2 \pi}} e^{( -\frac{(a-\mu)^2}{2 \sigma^2} )} \frac{ (X_1+X_2)!}{ X_1! X_2!} (\frac{e^a}{1+e^a})^{X_1} (\frac{1}{1+e^a})^{X_2}.
+P(X = (x_1, \dots, x_D)) = \int_{p \in \mathcal{S}^D} \frac{(\sum x_i)!}{\prod x_i!} \prod x_i^{p_i} dN(p; \mu, \Sigma).
 \]
 
-Maximizing $L^*(a)$ with respect $a$ is equivalent to maximize
+Fitting the parameters $(\mu, \Sigma)$ using maximum likelihood it is not straightforward difficult because it is required to optimize $P(X = (x_1, \dots, x_D))$ with respect $\mu$ and $\Sigma$.
 
-\[
-L(a) =  e^{( -\frac{(a-\mu)^2}{2 \sigma^2} )} (\frac{e^a}{1+e^a})^{X_1} (\frac{1}{1+e^a})^{X_2}.
-\]
-
-and
-
-\[
-l(a) = -\frac{(a-\mu)^2}{2 \sigma^2} + X_1 log(\frac{e^a}{1+e^a}) +  X_2 log(\frac{1}{1+e^a}).
-\]
-
-#### First and second derivatives
-
-\[
-l'(a) = -\frac{(a-\mu)}{\sigma^2} + X_1 \frac{1}{1 + e^a} + X_2 \frac{-e^a}{1 + e^a}
-\]
-
-and
-
-\[
-l''(a) = -\frac{1}{\sigma^2} -  \frac{e^a (X_1+X_2)}{(1 + e^a)^2}
-\]
-
-# Multivariate case
 
 ## Likelihood estimation 
 

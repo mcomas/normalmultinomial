@@ -109,14 +109,13 @@ arma::mat loglike2(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
 //' @export
 //' 
 // [[Rcpp::export]]
-arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
+arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X,
                     double eps = 1e-08, int iter = 100) {
   double tol = pow(eps, 2);
   
   int n = A.n_rows;
   int k = A.n_cols;
   
-  arma::mat inv_sigma = sigma.i();
   arma::mat out = arma::mat(A);
   
   arma::vec deriv = arma::zeros<arma::vec>(k);
@@ -196,8 +195,10 @@ List adjustNormalMultinomial(arma::mat X,
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
-  List pars(2);
+  
+  // Initialize A, maybe better outsie C++ code
   arma::mat A = arma::mat(n,k);
+  double tol = pow(eps, 2);
   for(int i = 0; i < n; i++){
     for(int j = 0; j < k; j++){
       if(X(i,j) != 0 && X(i,k) != 0){
@@ -217,20 +218,26 @@ List adjustNormalMultinomial(arma::mat X,
     }
   }
   
+  int cur_iter = 0;
+  
   arma::mat mu = mean(A);
   arma::mat sigma = cov(A);
-  arma::mat tmu, tsigma;
-  int cur_iter = 0;
+  arma::mat inv_sigma = sigma.i();
+  double loglik_prev, loglik = 0;
+  for(int l = 0, loglik = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   do{
     cur_iter++;
-    tmu = arma::mat(mu);
-    tsigma = arma::mat(sigma);
-    A = Mstep(A, mu.row(0).t(), sigma, X, eps);
-    //Mstep(A = A, mu = Mu, sigma = Sigma, X = X)
+    loglik_prev = loglik;
+    
+    A = Mstep(A, mu.row(0).t(), inv_sigma, X, eps);
+    
     mu = mean(A);
     sigma = cov(A);
-  } while (arma::norm(mu-tmu) > eps && cur_iter < iter); //sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
+    inv_sigma = sigma.i();
+    
+    for(int l = 0, loglik = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
+  } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
   
-  return List::create(mu, sigma, cur_iter, A);
+  return List::create(mu, sigma, A, cur_iter, A.row(0).t(), sigma, inv_sigma.i());
 }
 
