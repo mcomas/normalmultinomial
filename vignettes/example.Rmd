@@ -1,0 +1,70 @@
+---
+title: "Time consumption for different animals"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Time consumption for different animals}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, include=FALSE}
+library(normalmultinomial)
+library(dplyr)
+d <- read.csv("~/research/packages/normalmultinomial/data/ContZero2Marc.csv", stringsAsFactors=FALSE)
+```
+
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(d[,4:9])
+```
+
+The principal component plot for the counting data suggests to consider three different groups
+
+```{r, echo=FALSE, fig.width=4, fig.height=4}
+plot(princomp(d[,4:9])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2')
+```
+
+To fit a mixture model we start using the groups suggested by a K-means algorithm. We only use BED, PASSAGE and FEEDER information.
+
+
+```{r}
+ind = c(1,3,5)
+
+X = d[,3+ind]
+X$cluster = kmeans(d[,3+ind], 3)$cluster
+plot(princomp(X[,-4])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X[,4])
+```
+
+
+```{r, echo=FALSE, fig.width=8, fig.height=4}
+X = split(X, X$cluster)
+cc = lapply(X, function(.data) adjustNormalMultinomial(as.matrix(.data[,-4]))[1:3])
+
+cluster = do.call('c', lapply(X, function(.data) .data[,4]))
+X = do.call('rbind', lapply(X, function(.data) .data[,1:3]))
+A = do.call('rbind', lapply(cc, function(.cc) .cc[[3]]))
+
+muA = cc[[1]][[1]]
+inv_sigmaA = solve(cc[[1]][[2]])
+
+muB = cc[[2]][[1]]
+inv_sigmaB = solve(cc[[2]][[2]])
+
+muC = cc[[3]][[1]]
+inv_sigmaC = solve(cc[[3]][[2]])
+
+p = data.frame(
+  'A' = sapply(1:nrow(X), function(i) mvf(a = as.numeric(A[i,]), mu = muA, inv_sigma = inv_sigmaA, x = as.numeric(X[i,]))),
+  'B' = sapply(1:nrow(X), function(i) mvf(a = as.numeric(A[i,]), mu = muB, inv_sigma = inv_sigmaB, x = as.numeric(X[i,]))),
+  'C' = sapply(1:nrow(X), function(i) mvf(a = as.numeric(A[i,]), mu = muC, inv_sigma = inv_sigmaC, x = as.numeric(X[i,]))))
+
+X$cluster <- p$max <- apply(p[,1:3], 1, which.max)
+
+par(mfrow=c(1,2))
+
+plot(princomp(X[,-4])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X[,4])
+plot(princomp(A)$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X$cluster)
+par(mfrow=c(1,1))
+```
+

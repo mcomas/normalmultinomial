@@ -23,9 +23,9 @@ double factorial2(double x){
 //' @return Loglikelihood og oberserved data
 //' @export
 // [[Rcpp::export]]
-double mvf(arma::vec a, arma::vec mu, arma::mat sigma, arma::vec x){
+double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
-  arma::mat log_norm =  -0.5 * (a-mu).t() * inv(sigma) * (a-mu);
+  arma::mat log_norm =  -0.5 * (a-mu).t() * inv_sigma * (a-mu);
   double kappa = 1;
   for(int i = 0; i < k; i++) kappa += exp(a[i]);
   double multinom = -x[k] * log(kappa);
@@ -35,9 +35,9 @@ double mvf(arma::vec a, arma::vec mu, arma::mat sigma, arma::vec x){
 }
 
 
-double mvf2(int I, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x){
+double mvf2(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
-  arma::mat log_norm =  -(a-mu).t() * sigma_inv(arma::span::all, I);
+  arma::mat log_norm =  -(a-mu).t() * inv_sigma(arma::span::all, I);
   double kappa = 1;
   for(int i = 0; i < k; i++) kappa += exp(a(i));
   double mult = 0;
@@ -48,12 +48,12 @@ double mvf2(int I, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x){
 }
 
 
-double mvf3(int I, int J, arma::vec a, arma::vec mu, arma::mat sigma_inv, arma::vec x){
+double mvf3(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   
   double kappa = 1;
   for(int i = 0; i < k; i++) kappa += exp(a(i));
-  double mult = -sigma_inv(I, J);
+  double mult = -inv_sigma(I, J);
   if(I == J){
     for(int i = 0; i < k + 1; i++) mult -= x(i) * exp(a(I)) * (kappa-exp(a(I))) / (kappa*kappa);
   }else{

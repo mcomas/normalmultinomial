@@ -8,7 +8,7 @@ N = 100
 Mu = c(4, 0)
 Sigma = matrix(c(1, -0.75,
                  -0.75, 1), nrow=2) 
-Size = sample(100*100:500, N, replace=TRUE)
+Size = sample(1*100:500, N, replace=TRUE)
 
 ## Plot de la distribució normal
 library(compositions)
