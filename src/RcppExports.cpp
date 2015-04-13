@@ -7,16 +7,48 @@
 using namespace Rcpp;
 
 // mvf
-double mvf(arma::vec a, arma::vec mu, arma::mat sigma, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP xSEXP) {
+double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf(a, mu, sigma, x));
+    __result = Rcpp::wrap(mvf(a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
+// Mstep
+arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, double eps, int iter);
+RcppExport SEXP normalmultinomial_Mstep(SEXP ASEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    __result = Rcpp::wrap(Mstep(A, mu, inv_sigma, X, eps, iter));
+    return __result;
+END_RCPP
+}
+// Mstep2
+List Mstep2(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X, double eps, int iter);
+RcppExport SEXP normalmultinomial_Mstep2(SEXP ASEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    __result = Rcpp::wrap(Mstep2(A, mu, sigma, X, eps, iter));
     return __result;
 END_RCPP
 }
