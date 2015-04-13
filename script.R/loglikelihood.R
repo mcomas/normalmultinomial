@@ -37,5 +37,5 @@ z = as.matrix( dcast(df, Var1~Var2, value.var = 'z') )[,-1]
 contour(x,y,z, nlevels = 50)
 points(A[iobs,1], A[iobs,2])
 
-opt = Mstep(A = matrix(A[1,], nrow=1), mu = Mu, sigma = Sigma, X = matrix(X[1,], nrow=1))
+opt = Mstep(A = matrix(A[iobs,], nrow=1), mu = Mu, sigma = Sigma, X = matrix(X[iobs,], nrow=1))
 points(opt, col='red')

@@ -51,7 +51,7 @@ The reduced likelihood function condition to unobserved $a = [a_1, ..., a_k] := 
 
 
 \[
-l(a) = -\frac{1}{2} (a-\mu)^{T} \Sigma^{-1} (a-\mu) + \sum_{\ell = 1}^k X_\ell log(\frac{e^{a_\ell}}{\kappa}) 
+l(a) = -\frac{1}{2} (a-\mu)^{T} \Sigma^{-1} (a-\mu) + X_K log(\frac{1}{\kappa}) + \sum_{\ell = 1}^k X_\ell log(\frac{e^{a_\ell}}{\kappa}) 
 \]
 
 where $\kappa = 1 + e^{a_1} + \dots + e^{a_k}$.

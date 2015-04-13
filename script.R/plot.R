@@ -1,11 +1,11 @@
 library(Rcpp)
 sourceCpp('src/fitting.cpp')
-
+source('R/basic.R')
 #Paramatres 
 N = 1000
 Mu = c(2, 0)
-Sigma = matrix(c(1, -0.25,
-                 -0.25, 1), nrow=2) * 0.71
+Sigma = matrix(c(1, 0.5,
+                 0.5, 1), nrow=2) 
 Size = sample(50:100, N, replace=TRUE)
 
 ## Plot de la distribució normal
@@ -13,7 +13,7 @@ library(compositions)
 X = rnorm.multinom(N, Mu, Sigma, Size = Size)
 sum(X==0)
 
-cc = adjustNormalMultinomial(X = X, 1e-1)
+cc = adjustNormalMultinomial(X = X)
 
 par(mfrow=c(1,2))
 plot.rcomp(X)

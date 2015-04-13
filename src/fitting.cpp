@@ -25,12 +25,11 @@ double factorial2(double x){
 // [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat sigma, arma::vec x){
   int k = a.size();
-  arma::mat log_norm = - 0.5 * log(det(sigma)) -0.5 * (a-mu).t() * inv(sigma) * (a-mu);
+  arma::mat log_norm =  -0.5 * (a-mu).t() * inv(sigma) * (a-mu);
   double kappa = 1;
   for(int i = 0; i < k; i++) kappa += exp(a[i]);
   double multinom = -x[k] * log(kappa);
   for(int i = 0; i < k; i++) multinom += x[i] * ( a[i] - log(kappa));
-
   
   return( log_norm(0) + multinom );
 }
@@ -112,10 +111,11 @@ arma::mat loglike2(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
 // [[Rcpp::export]]
 arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
                     double eps = 1e-08, int iter = 100) {
-  //double tol = pow(eps, 2);
+  double tol = pow(eps, 2);
   
   int n = A.n_rows;
   int k = A.n_cols;
+  
   arma::mat inv_sigma = sigma.i();
   arma::mat out = arma::mat(A);
   
@@ -123,11 +123,12 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
   arma::mat deriv2 = arma::zeros<arma::mat>(k, k);
   arma::mat err = arma::mat(1,1);
   arma::vec step = arma::zeros<arma::vec>(k);
-  
+  double loglik_prev = 0, loglik = 0;
   for(int l=0; l < n; l++){
     int cur_iter = 0;
     arma::rowvec temp = arma::zeros<arma::rowvec>(k);
     do{
+      loglik_prev = mvf(out.row(l).t(), mu, inv_sigma, X.row(l).t());
       cur_iter++;
       temp = out.row(l);
       
@@ -139,13 +140,52 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
       }
       step = arma::solve(deriv2, deriv);
       out.row(l) = out.row(l) - step.t();
-      
-    } while(arma::norm(step) > eps && cur_iter < iter); //err(0) > tol &&
+      loglik = mvf(out.row(l).t(), mu, inv_sigma, X.row(l).t());
+    } while(pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); //err(0) > tol &&
   }
   return out;
   
 }
 
+// [[Rcpp::export]]
+List Mstep2(arma::mat A, arma::vec mu, arma::mat sigma, arma::mat X,
+           double eps = 1e-08, int iter = 100) {
+  double tol = pow(eps, 2);
+  
+  int n = A.n_rows;
+  int k = A.n_cols;
+  
+  arma::mat inv_sigma = sigma.i();
+  arma::mat out = arma::mat(A);
+  
+  arma::vec deriv = arma::zeros<arma::vec>(k);
+  arma::mat deriv2 = arma::zeros<arma::mat>(k, k);
+  arma::mat err = arma::mat(1,1);
+  arma::vec step = arma::zeros<arma::vec>(k);
+  
+  double loglik_prev = 0, loglik = 0;
+  for(int l=0; l < n; l++){
+    int cur_iter = 0;
+    arma::rowvec temp = arma::zeros<arma::rowvec>(k);
+    do{
+      loglik_prev = mvf(out.row(l).t(), mu, inv_sigma, X.row(l).t());
+      cur_iter++;
+      temp = out.row(l);
+      
+      for(int I=0; I<k; I++){
+        deriv[I] =  mvf2(I, out.row(l).t(), mu, inv_sigma, X.row(l).t());
+        for(int J=0; J<k; J++){
+          deriv2(I,J) = mvf3(I, J, out.row(l).t(), mu, inv_sigma, X.row(l).t());
+        }
+      }
+      step = arma::solve(deriv2, deriv);
+      out.row(l) = out.row(l) - step.t();
+      loglik = mvf(out.row(l).t(), mu, inv_sigma, X.row(l).t());
+    } while( pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); //err(0) > tol &&
+  }
+  return List::create(out, deriv, deriv2, step);
+  
+}
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param X normal-multinomial sample
