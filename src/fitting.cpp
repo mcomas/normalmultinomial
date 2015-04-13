@@ -238,6 +238,17 @@ List adjustNormalMultinomial(arma::mat X,
     for(int l = 0, loglik = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
   
-  return List::create(mu, sigma, A, cur_iter, A.row(0).t(), sigma, inv_sigma.i());
+  arma::mat A_comp = arma::zeros<arma::mat>(n, K);
+  for(int i = 0; i < n; i ++){
+    double kappa = 1;
+    for(int j = 0; j < k; j++){
+      kappa += A_comp(i,j) = exp(A(i,j));
+    }
+    A_comp(i,k) = 1;
+    for(int j = 0; j < K; j++){
+      A_comp(i,j) /= kappa;
+    }
+  }
+  return List::create(mu, sigma, A_comp, cur_iter, A.row(0).t(), sigma, inv_sigma.i());
 }
 

@@ -1,5 +1,6 @@
 ---
 title: "Time consumption for different animals"
+author: M.Comas-Cufí
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,31 +10,34 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
+options(width=180)
 library(normalmultinomial)
+library(compositions)
 library(dplyr)
 d <- read.csv("~/research/packages/normalmultinomial/data/ContZero2Marc.csv", stringsAsFactors=FALSE)
 ```
 
+Each animal was observed 97 times, the dataset show the number of times each animals was doing an specific activity.
+
 
 ```{r, echo=FALSE, results='asis'}
-knitr::kable(d[,4:9])
+knitr::kable(d)
 ```
 
 The principal component plot for the counting data suggests to consider three different groups
 
 ```{r, echo=FALSE, fig.width=4, fig.height=4}
-plot(princomp(d[,4:9])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2')
+plot(princomp(d[,4:9])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=as.factor(d$Treatment))
 ```
 
-To fit a mixture model we start using the groups suggested by a K-means algorithm. We only use BED, PASSAGE and FEEDER information.
+To fit a mixture model we start using the groups suggested by a K-means algorithm. To avoid singularity problems (the dataset has 6 component and there is a group with only 4 observations) we only use BED, PASSAGE and FEEDER information.
 
 
-```{r}
-ind = c(1,3,5)
+```{r, echo=FALSE}
+ind = c(5,1,3)
 
 X = d[,3+ind]
 X$cluster = kmeans(d[,3+ind], 3)$cluster
-plot(princomp(X[,-4])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X[,4])
 ```
 
 
@@ -63,8 +67,8 @@ X$cluster <- p$max <- apply(p[,1:3], 1, which.max)
 
 par(mfrow=c(1,2))
 
-plot(princomp(X[,-4])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X[,4])
-plot(princomp(A)$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X$cluster)
+plot(princomp(X[,-4])$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X[,4], main="Counting data")
+plot(princomp(clr(alrInv(A)) )$scores[,1:2], xlab='Prin.comp.1', ylab='Prin.comp.2', col=X$cluster, main="Clr components")
 par(mfrow=c(1,1))
 ```
 

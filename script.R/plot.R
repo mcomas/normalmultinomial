@@ -1,11 +1,12 @@
-library(Rcpp)
-sourceCpp('src/fitting.cpp')
-source('R/basic.R')
+# library(Rcpp)
+# sourceCpp('src/fitting.cpp')
+# source('R/basic.R')
+library(normalmultinomial)
 
 set.seed(1)
 #Paramatres 
 N = 100
-Mu = c(4, 0)
+Mu = c(0, 0)
 Sigma = matrix(c(1, -0.75,
                  -0.75, 1), nrow=2) 
 Size = sample(1*100:500, N, replace=TRUE)
