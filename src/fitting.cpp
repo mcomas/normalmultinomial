@@ -236,7 +236,7 @@ List adjustNormalMultinomial(arma::mat X,
     sigma = cov(A);
     inv_sigma = sigma.i();
     
-    if( det(sigma) < 1e-30){
+    if( det(sigma) < 1e-15){
       break;
     }
     loglik  = 0;
