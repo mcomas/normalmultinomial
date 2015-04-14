@@ -25,7 +25,7 @@ We are going to generate a sample coming from a normal-multinomial distribution 
 
 ```{r}
 #Paramaters
-N = 20  # Number of observations
+N = 2000  # Number of observations
 Mu = c(4, 0)
 Sigma = matrix(c(1, -0.75,
                  -0.75, 1), nrow=2)
@@ -75,11 +75,11 @@ knitr::kable(round(100*head(fit[[3]]),2), col.names = c('X1', 'X2','X3'))
 
 The hidden elements represented on the ternary diagram look like
 
-```{r, fig.width=4,  fig.show='hold'}
+```{r, fig.width=5,  fig.height=4, fig.show='hold'}
 compositions::plot.rcomp(X)
 compositions::plot.acomp(fit[[3]])
 ```
 
-```{r}
+```{r, fig.width=4, fig.height=4}
 plot(compositions::ilr(fit[[3]]))
 ```

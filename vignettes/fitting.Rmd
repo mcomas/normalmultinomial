@@ -11,11 +11,20 @@ vignette: >
 
 The probability density function of a Normal-multinomial distribution is given by
 \[
-P(X = (x_1, \dots, x_D)) = \int_{p \in \mathcal{S}^D} \frac{(\sum x_i)!}{\prod x_i!} \prod x_i^{p_i} dN(p; \mu, \Sigma).
+P(X = (x_1, \dots, x_K)) = \int_{p \in \mathcal{S}^K} \frac{(\sum x_i)!}{\prod x_i!} \prod x_i^{p_i} dALN(p; \mu, \Sigma).
 \]
 
-Fitting the parameters $(\mu, \Sigma)$ using maximum likelihood it is not straightforward difficult because it is required to optimize $P(X = (x_1, \dots, x_D))$ with respect $\mu$ and $\Sigma$.
+Fitting the parameters $(\mu, \Sigma)$ using maximum likelihood it is not straightforward difficult because it is required to optimize $P(X = (x_1, \dots, x_K))$ with respect $\mu$ and $\Sigma$.
 
+For an observation $X = (x_1, \dots, x_K)$, assuming we know the value of probability $Z = (p_1, \dots, p_K) \sim ALN(\mu, \Sigma)$. The likelihoof of the join distribution of $X$ and $Z$ can be written as
+
+\[
+P(X , Z ) = P(X  | Z) P(Z).
+\]
+
+\[
+(2 \pi)^{k/2}|\Sigma|^{\frac{1}{2}} exp(-\frac{1}{2} (alr(p)-\mu)^{T} \Sigma^{-1} (alr(p)-\mu)) \frac{(x_1+\dots+x_K)!}{x_1! \dots x_K!}\prod_{\ell=1}^K p_\ell^{x_\ell}
+\]
 
 ## Likelihood estimation 
 

@@ -1,0 +1,44 @@
+---
+title: "Counting Replacement"
+author: "M. Comas-Cufí and J.A. Martin-Fernández and G. Mateu-Figueras"
+date: "14/04/2015"
+output: html_document
+---
+
+
+```{r}
+library(normalmultinomial)
+library(compositions)
+library(dplyr)
+```
+
+
+```{r, echo=FALSE}
+S = 10
+X1 = c(S,1,1)
+X2 = c(1,S,1)
+X3 = c(1,1,S)
+X = rbind(X1, X2, X3)
+X.nonZero  = X
+X.nonZero[X == 0] = 0.3
+
+A = log(X.nonZero[,1:2]/X.nonZero[,3])
+```
+
+```{r, echo=FALSE}
+plot.rcomp(X)
+```
+
+
+```{r, echo=FALSE}
+fit = adjustNormalMultinomial(X = X, eps=1e-10)
+mu = alrInv(fit[[1]])
+A = fit[[3]]
+plot.rcomp(A, add = T, col='red')
+plot.rcomp(mu, add =T, col='blue')
+```
+
+```{r, echo=FALSE}
+plot(ilr(X), col=2)
+plot(ilr(A), add=T)
+```

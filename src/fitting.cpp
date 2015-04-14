@@ -204,7 +204,7 @@ List adjustNormalMultinomial(arma::mat X,
       if(X(i,j) != 0 && X(i,k) != 0){
         A(i,j) = log(X(i,j)/X(i,k));
       }else{
-        if(X(i,j) == 0 && X(i,j) == 0){
+        if(X(i,j) == 0 && X(i,k) == 0){
           A(i,j) = 0;
         }else{
           if(X(i,j) == 0){
@@ -223,8 +223,9 @@ List adjustNormalMultinomial(arma::mat X,
   arma::mat mu = mean(A);
   arma::mat sigma = cov(A);
   arma::mat inv_sigma = sigma.i();
+  
   double loglik_prev, loglik = 0;
-  for(int l = 0, loglik = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
+  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   do{
     cur_iter++;
     loglik_prev = loglik;
@@ -235,7 +236,11 @@ List adjustNormalMultinomial(arma::mat X,
     sigma = cov(A);
     inv_sigma = sigma.i();
     
-    for(int l = 0, loglik = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
+    if( det(sigma) < 1e-30){
+      break;
+    }
+    loglik  = 0;
+    for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
   
   arma::mat A_comp = arma::zeros<arma::mat>(n, K);
@@ -249,6 +254,6 @@ List adjustNormalMultinomial(arma::mat X,
       A_comp(i,j) /= kappa;
     }
   }
-  return List::create(mu, sigma, A_comp, cur_iter, A.row(0).t(), sigma, inv_sigma.i());
+  return List::create(mu, sigma, A_comp, cur_iter, A, loglik, loglik_prev);
 }
 
