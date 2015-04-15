@@ -14,7 +14,7 @@ library(dplyr)
 
 
 ```{r, echo=FALSE}
-S = 10
+S = 100
 X1 = c(S,1,1)
 X2 = c(1,S,1)
 X3 = c(1,1,S)
