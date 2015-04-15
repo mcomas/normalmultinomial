@@ -14,10 +14,10 @@ library(dplyr)
 
 
 ```{r, echo=FALSE}
-S = 100
-X1 = c(S,1,1)
-X2 = c(1,S,1)
-X3 = c(1,1,S)
+S = 2
+X1 = c(S,0,0)
+X2 = c(1,S,0)
+X3 = c(0,0,S)
 X = rbind(X1, X2, X3)
 X.nonZero  = X
 X.nonZero[X == 0] = 0.3
@@ -31,7 +31,7 @@ plot.rcomp(X)
 
 
 ```{r, echo=FALSE}
-fit = adjustNormalMultinomial(X = X, eps=1e-10)
+fit = adjustNormalMultinomial(X = X, prop=0.7)
 mu = alrInv(fit[[1]])
 A = fit[[3]]
 plot.rcomp(A, add = T, col='red')

@@ -23,7 +23,7 @@ P(X , Z ) = P(X  | Z) P(Z).
 \]
 
 \[
-(2 \pi)^{k/2}|\Sigma|^{\frac{1}{2}} exp(-\frac{1}{2} (alr(p)-\mu)^{T} \Sigma^{-1} (alr(p)-\mu)) \frac{(x_1+\dots+x_K)!}{x_1! \dots x_K!}\prod_{\ell=1}^K p_\ell^{x_\ell}
+(2 \pi)^{-k/2}|\Sigma|^{-\frac{1}{2}} exp(-\frac{1}{2} (alr(p)-\mu)^{T} \Sigma^{-1} (alr(p)-\mu)) \frac{(x_1+\dots+x_K)!}{x_1! \dots x_K!}\prod_{\ell=1}^K p_\ell^{x_\ell}
 \]
 
 ## Likelihood estimation 
