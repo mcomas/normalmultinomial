@@ -11,7 +11,7 @@ vignette: >
 
 The probability density function of a Normal-multinomial distribution is given by
 \[
-P(X = (x_1, \dots, x_K)) = \int_{p \in \mathcal{S}^K} \frac{(\sum x_i)!}{\prod x_i!} \prod x_i^{p_i} dALN(p; \mu, \Sigma).
+P(X = (x_1, \dots, x_K)) = \int_{p \in \mathcal{S}^K} \frac{(\sum x_i)!}{\prod x_i!} \prod p_i^{x_i} dALN(p; \mu, \Sigma).
 \]
 
 Fitting the parameters $(\mu, \Sigma)$ using maximum likelihood it is not straightforward difficult because it is required to optimize $P(X = (x_1, \dots, x_K))$ with respect $\mu$ and $\Sigma$.

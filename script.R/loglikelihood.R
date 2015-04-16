@@ -2,14 +2,20 @@ library(Rcpp)
 sourceCpp('src/fitting.cpp')
 
 set.seed(1)
-N = 1000
+N = 5
 Mu = c(2, 0)
 Sigma = matrix(c(1, -0.25,
                  -0.25, 1), nrow=2) * 0.71
 Size = sample(50:100, N, replace=TRUE)
-X = rnorm.multinom(N, Mu, Sigma, Size = Size)
 
-K = ncol(X)
+X = rnormalmultinomial(mu = Mu, sigma = Sigma, size = Size)
+
+logLikelihood(X = X, mu = Mu, sigma = Sigma, N = 100000)
+fit = adjustNormalMultinomial(X = X)
+logLikelihood(X = X, mu = fit[[1]], sigma = fit[[2]], N = 100000)
+
+
+0K = ncol(X)
 k = K -1
 sum(X == 0)
 

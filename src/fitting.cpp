@@ -1,9 +1,89 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
+#include <map>
+#include <random>
+#include <vector>
 
 using namespace Rcpp;
 
+const double log2pi = std::log(2.0 * M_PI);
+
+
+
+// [[Rcpp::export]]
+arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
+  int ncols = sigma.n_cols;
+  arma::mat Y = arma::randn(n, ncols);
+  return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
+}
+
+// [[Rcpp::export]]
+arma::mat rmultinom(arma::mat A, arma::vec size) {
+  int k = A.n_cols;
+  int n = A.n_rows;
+  
+  arma::mat res = arma::zeros<arma::mat>(n, k);
+  
+  std::vector<double> p(k);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  for(int i=0; i < n; i++){
+    for(int j=0; j < k; j++) p[j] = A(i,j);
+    std::discrete_distribution<> d(p.begin(),p.end());
+    for(int l=0; l < size[i]; l++) ++res(i, d(gen));
+  }
+  return(res);
+}
+
+// [[Rcpp::export]]
+arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
+  int n = size.n_elem;
+  int k = mu.n_elem;
+  arma::mat A = arma::ones<arma::mat>(n, k+1);
+  A(arma::span::all, arma::span(0,k-1)) = exp(rnormal(n, mu, sigma));
+  return(rmultinom(A, size));
+}
+
+// [[Rcpp::export]]
+double logLikelihood(arma::mat X, arma::vec mu, arma::mat sigma, int N = 100){
+  int n = X.n_rows;
+  int K = X.n_cols;
+  int k = K - 1;
+  
+  arma::mat P = arma::ones<arma::mat>(n, K);
+  arma::vec loglik_obs = arma::vec(n);
+  double kappa;
+  arma::vec E = arma::zeros<arma::vec>(n);
+  for(int l = 0; l < N; l++){
+    arma::mat A = rnormal(n, mu, sigma);
+    P(arma::span::all, arma::span(0,k-1)) = exp(A);
+    
+    for(int i = 0; i < n; i++){
+      kappa = 0; 
+      for(int j=0; j < K; j++) kappa += P(i, j);
+      
+      loglik_obs[i] = 0;
+      for(int  j=0; j < K; j++) loglik_obs[i] += X(i,j) * log( P(i,j) / kappa);
+    }
+    E += exp(loglik_obs);
+    // NEgative
+    P(arma::span::all, arma::span(0,k-1)) = exp(-A);
+    
+    for(int i = 0; i < n; i++){
+      kappa = 0; 
+      for(int j=0; j < K; j++) kappa += P(i, j);
+      
+      loglik_obs[i] = 0;
+      for(int  j=0; j < K; j++) loglik_obs[i] += X(i,j) * log( P(i,j) / kappa);
+    }
+    E += exp(loglik_obs);
+    //Rcout << exp(loglik_obs) << std::endl;
+  }
+  
+  E /= (2*N);
+  return(sum(log(E)));
+}
 
 double factorial2(double x){
   double res = 1;
@@ -160,12 +240,12 @@ List adjustNormalMultinomial2(arma::mat X, arma::mat A,
     loglik_prev = loglik;
     
     
-    for(int s = 0; s < 5; s++){
+    for(int s = 0; s < 20; s++){
       A = Mstep(A, mu.row(0).t(), inv_sigma, X);
       
-      loglik  = 0;
-      for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-      Rcout << "After Mult LogLik: " << loglik << std::endl;
+      //loglik  = 0;
+      //for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
+      //Rcout << "After Mult LogLik: " << loglik << std::endl;
     }
     
     mu = mean(A);
@@ -174,13 +254,13 @@ List adjustNormalMultinomial2(arma::mat X, arma::mat A,
     
     loglik  = 0;
     for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-    Rcout << "After Norm LogLik: " << loglik << std::endl;
+    //Rcout << "After Norm LogLik: " << loglik << std::endl;
     
     if( det(sigma) < 1e-20){
       Rcout << "Stop determinant close to zero" << std::endl;
       break;
     }
-    
+    Rcout << "LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100000) << std::endl;
   } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
   
   arma::mat A_comp = arma::zeros<arma::mat>(n, K);
@@ -209,7 +289,6 @@ List adjustNormalMultinomial3(arma::mat X, arma::mat A,
   int K = X.n_cols;
   int k = K - 1;
   
-  double tol = pow(eps, 2);
   int cur_iter = 0;
   
   arma::mat mu = mean(A);
@@ -223,12 +302,13 @@ List adjustNormalMultinomial3(arma::mat X, arma::mat A,
   Rcout << "First guess LogLik: " << loglik << std::endl;
   
 //  do{
-    cur_iter++;
+    
     
     
     double gamma = 1;
     bool next_step = false;
-    do{
+    do {
+      cur_iter++;
       next_step = false;
       loglik_prev = loglik;
       
@@ -269,7 +349,7 @@ List adjustNormalMultinomial3(arma::mat X, arma::mat A,
         Rcout << "Current gamma: " << gamma << std::endl;
         gamma *= 0.5;
       }
-    }while( next_step || (loglik - loglik_prev) > eps );
+    }while( (next_step || (loglik - loglik_prev) > eps) &&  cur_iter < iter);
     
 //    if( det(sigma) < 1e-20){
 //      Rcout << "Stop determinant close to zero" << std::endl;
@@ -326,7 +406,7 @@ List adjustNormalMultinomial(arma::mat X,
       }
     }
   }
-  List list = adjustNormalMultinomial3(X, A, eps, iter, minSigma);
+  List list = adjustNormalMultinomial2(X, A, eps, iter, minSigma);
   return list;
 }
 
