@@ -67,24 +67,15 @@ Mstep <- function(A, mu, inv_sigma, X, eps = 1e-8) {
 #' @param X normal-multinomial sample
 #' @param A initial values
 #' @export
-adjustNormalMultinomial2 <- function(X, A, eps = 1e-04, iter = 100L, minSigma = 1e-06) {
+adjustNormalMultinomial2 <- function(X, A, eps, iter, minSigma) {
     .Call('normalmultinomial_adjustNormalMultinomial2', PACKAGE = 'normalmultinomial', X, A, eps, iter, minSigma)
 }
 
 #' Finds the mean and covariance of a normal multinomial distribution
 #' 
 #' @param X normal-multinomial sample
-#' @param A initial values
 #' @export
-adjustNormalMultinomial3 <- function(X, A, eps, iter, minSigma) {
-    .Call('normalmultinomial_adjustNormalMultinomial3', PACKAGE = 'normalmultinomial', X, A, eps, iter, minSigma)
-}
-
-#' Finds the mean and covariance of a normal multinomial distribution
-#' 
-#' @param X normal-multinomial sample
-#' @export
-adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, minSigma = 1e-06, prop = 0.3) {
-    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, minSigma, prop)
+adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, prop = 0.3, minSigma = 1e-5) {
+    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, prop, minSigma)
 }
 
