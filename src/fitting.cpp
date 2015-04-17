@@ -1,16 +1,24 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
-#include <map>
 #include <random>
 #include <vector>
+
+// Enable C++11 via this plugin (Rcpp 0.10.3 or later)
+// [[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
 
 const double log2pi = std::log(2.0 * M_PI);
 
 
-
+//' Simulate variables following a normal distribution. 
+//' 
+//' @param n sample size
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @return Sample matrix
+//' @export
 // [[Rcpp::export]]
 arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
   int ncols = sigma.n_cols;
@@ -18,8 +26,14 @@ arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
   return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
 }
 
+//' Simulate variables following a multinomial distribution. 
+//' 
+//' @param A matrix with the probabilities used to generate the sample
+//' @param size vector with the countings in each row of A
+//' @return sample with the same dimension as A
+//' @export
 // [[Rcpp::export]]
-arma::mat rmultinom(arma::mat A, arma::vec size) {
+arma::mat rmultinomial(arma::mat A, arma::vec size) {
   int k = A.n_cols;
   int n = A.n_rows;
   
@@ -36,13 +50,20 @@ arma::mat rmultinom(arma::mat A, arma::vec size) {
   return(res);
 }
 
+//' Simulate variables following a normal multinomial distribution. 
+//' 
+//' @param n sample size
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @return Sample matrix
+//' @export
 // [[Rcpp::export]]
 arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
   int n = size.n_elem;
   int k = mu.n_elem;
   arma::mat A = arma::ones<arma::mat>(n, k+1);
   A(arma::span::all, arma::span(0,k-1)) = exp(rnormal(n, mu, sigma));
-  return(rmultinom(A, size));
+  return(rmultinomial(A, size));
 }
 
 // [[Rcpp::export]]
