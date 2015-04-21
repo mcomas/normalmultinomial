@@ -4,8 +4,8 @@ sourceCpp('src/fitting.cpp')
 set.seed(1)
 N = 5
 Mu = c(2, 0)
-Sigma = matrix(c(1, -0.25,
-                 -0.25, 1), nrow=2) * 0.71
+Sigma = matrix(c(1, -0.75,
+                 -0.75, 1), nrow=2) * 0.71
 Size = sample(50:100, N, replace=TRUE)
 
 X = rnormalmultinomial(mu = Mu, sigma = Sigma, size = Size)

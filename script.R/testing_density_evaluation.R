@@ -13,7 +13,7 @@ X.nonZero[X == 0] = 0.3
 A = log(X.nonZero[,1:2]/X.nonZero[,3])
 
 
-fit = adjustNormalMultinomial3(X = X, A=A, iter=10, eps=1e-10, minSigma=1e-10)
+fit = adjustNormalMultinomial_internal(X = X, A=A, iter=10, eps=1e-10, minSigma=1e-10)
 
 library(compositions)
 plot(ilr(X))
