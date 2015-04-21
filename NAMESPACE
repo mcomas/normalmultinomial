@@ -2,7 +2,11 @@
 
 export(Mstep)
 export(adjustNormalMultinomial)
+export(adjustNormalMultinomial2)
 export(mvf)
+export(rmultinomial)
 export(rnorm.multinom)
+export(rnormal)
+export(rnormalmultinomial)
 importFrom(Rcpp,evalCpp)
 useDynLib(normalmultinomial)

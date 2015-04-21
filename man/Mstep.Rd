@@ -4,7 +4,7 @@
 \alias{Mstep}
 \title{Finds the mean and covariance of a normal multinomial distribution}
 \usage{
-Mstep(A, mu, inv_sigma, X, eps = 1e-08, iter = 100L)
+Mstep(A, mu, inv_sigma, X, eps = 1e-08)
 }
 \arguments{
 \item{A}{aln hidden obeservations}

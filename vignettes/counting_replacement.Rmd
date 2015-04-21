@@ -13,19 +13,29 @@ library(dplyr)
 ```
 
 
-```{r, echo=FALSE}
-S = 2
-X1 = c(S,0,0)
-X2 = c(1,S,0)
-X3 = c(0,0,S)
-X = rbind(X1, X2, X3)
-X.nonZero  = X
-X.nonZero[X == 0] = 0.3
+```{r, include=FALSE, echo=FALSE}
+# S = 2
+# X1 = c(S,0,0)
+# X2 = c(1,S,0)
+# X3 = c(0,0,S)
+# X = rbind(X1, X2, X3)
+# X.nonZero  = X
+# X.nonZero[X == 0] = 0.3
+# 
+# A = log(X.nonZero[,1:2]/X.nonZero[,3])
+```
 
-A = log(X.nonZero[,1:2]/X.nonZero[,3])
+```{r}
+#Paramaters
+N = 200  # Number of observations
+Mu = c(4, 0)
+Sigma = matrix(c(1, -0.25,
+                 -0.25, 1), nrow=2)
+Size = 10*sample(10:50, N, replace=TRUE) # Countings for each observation
 ```
 
 ```{r, echo=FALSE}
+X = rnormalmultinomial(mu = Mu, sigma = Sigma, size = Size)
 plot.rcomp(X)
 ```
 

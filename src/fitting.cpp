@@ -1,16 +1,24 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
-#include <map>
 #include <random>
 #include <vector>
+
+// Enable C++11 via this plugin (Rcpp 0.10.3 or later)
+// [[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
 
 const double log2pi = std::log(2.0 * M_PI);
 
 
-
+//' Simulate variables following a normal distribution. 
+//' 
+//' @param n sample size
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @return Sample matrix
+//' @export
 // [[Rcpp::export]]
 arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
   int ncols = sigma.n_cols;
@@ -18,8 +26,14 @@ arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
   return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
 }
 
+//' Simulate variables following a multinomial distribution. 
+//' 
+//' @param A matrix with the probabilities used to generate the sample
+//' @param size vector with the countings in each row of A
+//' @return sample with the same dimension as A
+//' @export
 // [[Rcpp::export]]
-arma::mat rmultinom(arma::mat A, arma::vec size) {
+arma::mat rmultinomial(arma::mat A, arma::vec size) {
   int k = A.n_cols;
   int n = A.n_rows;
   
@@ -36,6 +50,13 @@ arma::mat rmultinom(arma::mat A, arma::vec size) {
   return(res);
 }
 
+//' Simulate variables following a normal multinomial distribution. 
+//' 
+//' @param n sample size
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @return Sample matrix
+//' @export
 // [[Rcpp::export]]
 arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
   arma::arma_rng::set_seed(1);
@@ -43,7 +64,7 @@ arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
   int k = mu.n_elem;
   arma::mat A = arma::ones<arma::mat>(n, k+1);
   A(arma::span::all, arma::span(0,k-1)) = exp(rnormal(n, mu, sigma));
-  return(rmultinom(A, size));
+  return(rmultinomial(A, size));
 }
 
 // [[Rcpp::export]]
@@ -210,6 +231,7 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X,
   arma::mat deriv2 = arma::zeros<arma::mat>(k, k);
   
   arma::vec step = arma::zeros<arma::vec>(k);
+
   for(int l=0; l < n; l++){
     int current_iter = 0;
     do{
@@ -252,35 +274,29 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
   
   loglik  = 0;
   for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-  Rcout << "First guess LogLik: " << loglik << std::endl;
+  Rcout << "First guess LogLik: " << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100) << std::endl;
   
   do{
     cur_iter++;
     loglik_prev = loglik;
     
     
-    for(int s = 0; s < 20; s++){
-      A = Mstep(A, mu.row(0).t(), inv_sigma, X);
+    A = Mstep(A, mu.row(0).t(), inv_sigma, X);
       
-      //loglik  = 0;
-      //for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-      //Rcout << "After Mult LogLik: " << loglik << std::endl;
-    }
-    
     mu = mean(A);
     sigma = cov(A);
     inv_sigma = sigma.i();
     
     loglik  = 0;
     for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-    //Rcout << "After Norm LogLik: " << loglik << std::endl;
+
     
     if( det(sigma) < 1e-20){
       Rcout << "Stop determinant close to zero" << std::endl;
       break;
     }
-    Rcout << "LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100000) << std::endl;
-  } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
+    Rcout << "LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100) << std::endl;
+  } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter);
   
   arma::mat A_comp = arma::zeros<arma::mat>(n, K);
   for(int i = 0; i < n; i ++){
@@ -296,14 +312,13 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
   return List::create(mu, sigma, A_comp, cur_iter, A, loglik, loglik_prev);
 }
 
-
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param X normal-multinomial sample
 //' @export
 // [[Rcpp::export]]
 List adjustNormalMultinomial(arma::mat X,
-                             double eps = 1e-15, int iter = 100, double minSigma = 1e-06, double prop = 0.3){
+                             double eps = 1e-15, int iter = 100, double prop = 0.3, double minSigma = 1e-5){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
