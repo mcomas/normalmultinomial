@@ -216,7 +216,8 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
   arma::vec step = arma::zeros<arma::vec>(k);
   
   double loglik  = 0, prev_loglik = 0;
-  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
+  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu, inv_sigma, X.row(l).t());
+
   bool cont = false;
   double gamma = 1;
   do{
@@ -230,14 +231,15 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
         }
       }
       step = arma::solve(deriv2, deriv);
+      //Rcout << step << std::endl;
       out.row(l) = out.row(l) - gamma * step.t();
       
       loglik  = 0;
-      for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-      Rcout << "Loglik:" << loglik << std::endl;
+      for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu, inv_sigma, X.row(l).t());
     }
     if( loglik < prev_loglik ){
       gamma *= 0.5;
+      Rcout << "Gamma:" << gamma << std::endl;
       cont = true;
     }
   }while( loglik - prev_loglik > eps || cont );
@@ -253,7 +255,7 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
 //' @export
 // [[Rcpp::export]]
 List adjustNormalMultinomial2(arma::mat X, arma::mat A,
-                              double eps, int iter, double minSigma){
+                              double eps, int iter, double minSigma, int nmont){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
@@ -269,12 +271,11 @@ List adjustNormalMultinomial2(arma::mat X, arma::mat A,
   
   loglik  = 0;
   for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-  Rcout << "First guess LogLik: " << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100) << std::endl;
+  Rcout << "First guess LogLik: " << logLikelihood(X, mu.row(0).t(), sigma = sigma, nmont) << std::endl;
   
   do{
     cur_iter++;
     loglik_prev = loglik;
-    
     
     A = Mstep(A, mu.row(0).t(), inv_sigma, X);
       
@@ -290,7 +291,7 @@ List adjustNormalMultinomial2(arma::mat X, arma::mat A,
       Rcout << "Stop determinant close to zero" << std::endl;
       break;
     }
-    Rcout << "LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, 100) << std::endl;
+    Rcout << "Iter: " << cur_iter << " LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, nmont) << std::endl;
   } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter);
   
   arma::mat A_comp = arma::zeros<arma::mat>(n, K);
@@ -411,7 +412,7 @@ List adjustNormalMultinomial3(arma::mat X, arma::mat A,
 //' @export
 // [[Rcpp::export]]
 List adjustNormalMultinomial(arma::mat X,
-                             double eps = 1e-15, int iter = 100, double prop = 0.3, double minSigma = 1e-5){
+                             double eps = 1e-15, int iter = 100, double prop = 0.3, double minSigma = 1e-5, double nmont = 100){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
@@ -438,7 +439,7 @@ List adjustNormalMultinomial(arma::mat X,
       }
     }
   }
-  List list = adjustNormalMultinomial2(X, A, eps, iter, minSigma);
+  List list = adjustNormalMultinomial2(X, A, eps, iter, minSigma, nmont);
   return list;
 }
 

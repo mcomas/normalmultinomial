@@ -2,16 +2,51 @@ library(Rcpp)
 sourceCpp('src/fitting.cpp')
 
 set.seed(1)
-N = 5
-Mu = c(2, 0)
-Sigma = matrix(c(1, -0.25,
-                 -0.25, 1), nrow=2) * 0.71
+N = 50
+Mu = c(1, 0)
+Sigma = matrix(c(1, +0.25,
+                 +0.25, 1), nrow=2)
 Size = sample(50:100, N, replace=TRUE)
 
 X = rnormalmultinomial(mu = Mu, sigma = Sigma, size = Size)
+logLikelihood(X = X, mu = Mu, sigma = Sigma, N = 1000)
 
-logLikelihood(X = X, mu = Mu, sigma = Sigma, N = 100000)
-fit = adjustNormalMultinomial(X = X)
+plot.rcomp(X)
+fit = adjustNormalMultinomial(X = X, iter=1)
+plot.rcomp(fit[[3]], col='red', add=T)
+fit = adjustNormalMultinomial(X = X, iter=5)
+plot.rcomp(fit[[3]], col='blue', add=T)
+fit = adjustNormalMultinomial(X = X, iter=10)
+plot.rcomp(fit[[3]], col='green', add=T)
+fit = adjustNormalMultinomial(X = X, iter=15)
+plot.rcomp(fit[[3]], col='orange', add=T)
+
+
+set.seed(1)
+N = 300
+Mu = c(3, 0)
+Sigma = matrix(c(1, +0.25,
+                 +0.25, 1), nrow=2) * 3
+Size = sample(50:100, N, replace=TRUE)
+
+X = rnormalmultinomial(mu = Mu, sigma = Sigma, size = Size)
+logLikelihood(X = X, mu = Mu, sigma = Sigma, N = 1000)
+
+plot.rcomp(X)
+fit = adjustNormalMultinomial(X = X, nmont = 0)
+
+
+
+
+
+
+
+
+
+
+
+
+
 logLikelihood(X = X, mu = fit[[1]], sigma = fit[[2]], N = 100000)
 
 
