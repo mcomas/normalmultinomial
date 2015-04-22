@@ -41,7 +41,7 @@ arma::mat rmultinomial(arma::mat A, arma::vec size) {
   
   std::vector<double> p(k);
   std::random_device rd;
-  std::mt19937 gen(rd());
+  std::mt19937 gen(1); //r1); //d());
   for(int i=0; i < n; i++){
     for(int j=0; j < k; j++) p[j] = A(i,j);
     std::discrete_distribution<> d(p.begin(),p.end());
@@ -59,6 +59,7 @@ arma::mat rmultinomial(arma::mat A, arma::vec size) {
 //' @export
 // [[Rcpp::export]]
 arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
+  arma::arma_rng::set_seed(1);
   int n = size.n_elem;
   int k = mu.n_elem;
   arma::mat A = arma::ones<arma::mat>(n, k+1);
@@ -159,7 +160,15 @@ double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   //return( constant + log_norm(0) + multinom );
 }
 
-
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param a aln hidden obeservation
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param x normal-multinomial observation
+//' @return Loglikelihood og oberserved data
+//' @export
+// [[Rcpp::export]]
 double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   arma::mat log_norm =  -(a-mu).t() * inv_sigma(arma::span::all, I);
@@ -172,7 +181,15 @@ double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::ve
   return log_norm(0) + mult;
 }
 
-
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param a aln hidden obeservation
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param x normal-multinomial observation
+//' @return Loglikelihood og oberserved data
+//' @export
+// [[Rcpp::export]]
 double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   
@@ -204,8 +221,8 @@ double loglike(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X) {
 //' @export
 //' 
 // [[Rcpp::export]]
-arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, double eps = 1e-8) {
-  
+arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, 
+                double eps = 1e-8, int max_iter = 100) {
   int n = A.n_rows;
   int k = A.n_cols;
   
@@ -214,16 +231,12 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
   arma::mat deriv2 = arma::zeros<arma::mat>(k, k);
   
   arma::vec step = arma::zeros<arma::vec>(k);
-  
-  double loglik  = 0, prev_loglik = 0;
-  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu, inv_sigma, X.row(l).t());
 
-  bool cont = false;
-  double gamma = 1;
-  do{
-    cont = false;
-    prev_loglik = loglik;
-    for(int l=0; l < n; l++){
+
+  for(int l=0; l < n; l++){
+    int current_iter = 0;
+    do{
+      current_iter++;
       for(int I=0; I<k; I++){
         deriv[I] =  mvf_deriv(I, out.row(l).t(), mu, inv_sigma, X.row(l).t());
         for(int J=0; J<k; J++){
@@ -231,18 +244,9 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
         }
       }
       step = arma::solve(deriv2, deriv);
-      //Rcout << step << std::endl;
-      out.row(l) = out.row(l) - gamma * step.t();
-      
-      loglik  = 0;
-      for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu, inv_sigma, X.row(l).t());
-    }
-    if( loglik < prev_loglik ){
-      gamma *= 0.5;
-      Rcout << "Gamma:" << gamma << std::endl;
-      cont = true;
-    }
-  }while( loglik - prev_loglik > eps || cont );
+      out.row(l) = out.row(l) - step.t();
+    }while( norm(step, 2) > eps && current_iter < max_iter);
+  }
 
   return out;
   
@@ -254,8 +258,9 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, dou
 //' @param A initial values
 //' @export
 // [[Rcpp::export]]
-List adjustNormalMultinomial2(arma::mat X, arma::mat A,
-                              double eps, int iter, double minSigma, int nmont){
+
+List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
+                                      double eps = 1e-04, int iter = 100, double minSigma = 1e-06){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
@@ -308,104 +313,6 @@ List adjustNormalMultinomial2(arma::mat X, arma::mat A,
   return List::create(mu, sigma, A_comp, cur_iter, A, loglik, loglik_prev);
 }
 
-/*
-// //' Finds the mean and covariance of a normal multinomial distribution
-// //' 
-// //' @param X normal-multinomial sample
-// //' @param A initial values
-// //' @export
-// // [[Rcpp::export]]
-*/
-List adjustNormalMultinomial3(arma::mat X, arma::mat A,
-                              double eps, int iter, double minSigma){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  int k = K - 1;
-  
-  int cur_iter = 0;
-  
-  arma::mat mu = mean(A);
-  arma::mat sigma = cov(A);
-  arma::mat inv_sigma = sigma.i();
-    
-  double loglik_prev, loglik = 0;
-  
-  loglik  = 0;
-  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-  Rcout << "First guess LogLik: " << loglik << std::endl;
-  
-//  do{
-    
-    
-    
-    double gamma = 1;
-    bool next_step = false;
-    do {
-      cur_iter++;
-      next_step = false;
-      loglik_prev = loglik;
-      
-      arma::mat A_deriv = arma::zeros<arma::mat>(n,k);
-      for(int l=0; l < n; l++){
-        for(int I=0; I<k; I++){
-          A_deriv(l,I) =  mvf_deriv(I, A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-        }
-      }
-      arma::mat A_new = A + gamma * A_deriv;
-      
-      arma::mat mu_deriv = arma::zeros<arma::mat>(1, k);
-      for(int l=0; l < n; l++){
-        mu_deriv += (A.row(l)-mu) * inv_sigma;
-      }
-      arma::mat mu_new = mu + gamma * mu_deriv;
-
-      arma::mat sigma_deriv = arma::zeros<arma::mat>(k, k);
-      for(int l=0; l < n; l++){
-        sigma_deriv += -0.5 * ( inv_sigma - inv_sigma *  (A.row(l)-mu).t() * (A.row(l)-mu) * inv_sigma);
-      }
-      arma::mat sigma_new = sigma + gamma * sigma_deriv;
-      
-      A = A_new;
-      mu = mu_new;
-      sigma = sigma_new;
-      inv_sigma = sigma.i();
-      
-      Rcout << "Det sigma: " << det(sigma) << std::endl;
-      loglik  = 0;
-      Rcout << "A: " << std::endl;
-      Rcout << A << std::endl;
-      for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-      Rcout << "LogLik: " << loglik << std::endl;
-      
-      if(loglik < loglik_prev){
-        next_step = true;
-        Rcout << "Current gamma: " << gamma << std::endl;
-        gamma *= 0.5;
-      }
-    }while( (next_step || (loglik - loglik_prev) > eps) &&  cur_iter < iter);
-    
-//    if( det(sigma) < 1e-20){
-//      Rcout << "Stop determinant close to zero" << std::endl;
-//      break;
-//    }
-//    
-//  } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter); // arma::norm(mu-tmu) > eps &&sigma > minSigma && (pow(tmu-mu, 2) > tol || pow(tsigma-sigma, 2) > tol ) &&
-//  
-  arma::mat A_comp = arma::zeros<arma::mat>(n, K);
-  for(int i = 0; i < n; i ++){
-    double kappa = 1;
-    for(int j = 0; j < k; j++){
-      kappa += A_comp(i,j) = exp(A(i,j));
-    }
-    A_comp(i,k) = 1;
-    for(int j = 0; j < K; j++){
-      A_comp(i,j) /= kappa;
-    }
-  }
-  Rcout << "Final LogLik: " << loglik << std::endl;
-  return List::create(mu, sigma, A_comp, cur_iter, A, loglik, loglik_prev);
-}
-
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param X normal-multinomial sample
@@ -439,7 +346,7 @@ List adjustNormalMultinomial(arma::mat X,
       }
     }
   }
-  List list = adjustNormalMultinomial2(X, A, eps, iter, minSigma, nmont);
+  List list = adjustNormalMultinomial_internal(X, A, eps, iter, minSigma);
   return list;
 }
 
