@@ -258,9 +258,9 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X,
 //' @param A initial values
 //' @export
 // [[Rcpp::export]]
-
 List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
-                                      double eps = 1e-04, int iter = 100, double minSigma = 1e-06){
+                                      double eps = 1e-04, int iter = 100, 
+                                      double minSigma = 1e-06){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
@@ -273,10 +273,6 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
   arma::mat inv_sigma = sigma.i();
     
   double loglik_prev, loglik = 0;
-  
-  loglik  = 0;
-  for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-  
   do{
     cur_iter++;
     loglik_prev = loglik;
@@ -289,7 +285,6 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
     
     loglik  = 0;
     for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-
     
     if( det(sigma) < 1e-20){
       Rcout << "Stop determinant close to zero" << std::endl;
@@ -317,7 +312,8 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
 //' @export
 // [[Rcpp::export]]
 List adjustNormalMultinomial(arma::mat X,
-                             double eps = 1e-15, int iter = 100, double prop = 0.3, double minSigma = 1e-5, double nmont = 100){
+                             double eps = 1e-15, int iter = 100, 
+                             double prop = 0.3, double minSigma = 1e-5){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
