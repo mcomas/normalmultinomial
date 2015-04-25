@@ -72,9 +72,40 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// mvf_deriv
+double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_deriv(SEXP ISEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf_deriv(I, a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
+// mvf_deriv2
+double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_deriv2(SEXP ISEXP, SEXP JSEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type I(ISEXP);
+    Rcpp::traits::input_parameter< int >::type J(JSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf_deriv2(I, J, a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
 // Mstep
-arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, double eps);
-RcppExport SEXP normalmultinomial_Mstep(SEXP ASEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP XSEXP, SEXP epsSEXP) {
+arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, double eps, int max_iter);
+RcppExport SEXP normalmultinomial_Mstep(SEXP ASEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP XSEXP, SEXP epsSEXP, SEXP max_iterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -83,13 +114,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
     Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
-    __result = Rcpp::wrap(Mstep(A, mu, inv_sigma, X, eps));
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    __result = Rcpp::wrap(Mstep(A, mu, inv_sigma, X, eps, max_iter));
     return __result;
 END_RCPP
 }
-// adjustNormalMultinomial2
-List adjustNormalMultinomial2(arma::mat X, arma::mat A, double eps, int iter, double minSigma);
-RcppExport SEXP normalmultinomial_adjustNormalMultinomial2(SEXP XSEXP, SEXP ASEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP minSigmaSEXP) {
+// adjustNormalMultinomial_internal
+List adjustNormalMultinomial_internal(arma::mat X, arma::mat A, double eps, int iter, double minSigma);
+RcppExport SEXP normalmultinomial_adjustNormalMultinomial_internal(SEXP XSEXP, SEXP ASEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP minSigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -98,13 +130,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< double >::type minSigma(minSigmaSEXP);
-    __result = Rcpp::wrap(adjustNormalMultinomial2(X, A, eps, iter, minSigma));
+    __result = Rcpp::wrap(adjustNormalMultinomial_internal(X, A, eps, iter, minSigma));
     return __result;
 END_RCPP
 }
 // adjustNormalMultinomial
-List adjustNormalMultinomial(arma::mat X, double eps, int iter, double prop, double minSigma);
-RcppExport SEXP normalmultinomial_adjustNormalMultinomial(SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP propSEXP, SEXP minSigmaSEXP) {
+List adjustNormalMultinomial(arma::mat X, double eps, int iter, double prop, double minSigma, double nmont);
+RcppExport SEXP normalmultinomial_adjustNormalMultinomial(SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP propSEXP, SEXP minSigmaSEXP, SEXP nmontSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -113,7 +145,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< double >::type prop(propSEXP);
     Rcpp::traits::input_parameter< double >::type minSigma(minSigmaSEXP);
-    __result = Rcpp::wrap(adjustNormalMultinomial(X, eps, iter, prop, minSigma));
+    Rcpp::traits::input_parameter< double >::type nmont(nmontSEXP);
+    __result = Rcpp::wrap(adjustNormalMultinomial(X, eps, iter, prop, minSigma, nmont));
     return __result;
 END_RCPP
 }

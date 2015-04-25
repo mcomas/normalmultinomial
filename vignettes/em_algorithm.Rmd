@@ -9,10 +9,34 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
+```{r}
+library(normalmultinomial)
+```
+
+The normal-multinomial distribution is the distribution resulting after compounding the normal distribution defined on the Simplex and the well-known multinomial distribution. The parameters of a normal-multinomial distribution are the mean and covariance, $\mu$ and $\Sigma$, which define the parameters of the underlying normal distribution.
+
+For example, if we consider the parameters:
+
+```{r}
+mu = c(0, 0)
+Sigma = matrix(c(1, 0,
+                 0, 1), nrow=2)
+```
+
+```{r}
+rnormalmultinomial(mu = mu, sigma = Sigma, size = c(10, 100))
+```
+
+
+
+
+
+
+
 The probability density function of a Normal-multinomial distribution is given by
 
 \[
-P(X = (x_1, \dots, x_K)) = \int_{p \in \mathcal{S}^K} \frac{(\sum x_i)!}{\prod x_i!} \prod p_i^{x_i} dALN(p; \mu, \Sigma).
+P(X = (x_1, \dots, x_K)) = \int_{a \in R^K} \frac{(\sum x_i)!}{\prod x_i!} \prod_{1} p_i^{x_i} dALN(p; \mu, \Sigma).
 \]
 
 Fitting the parameters $(\mu, \Sigma)$ using maximum likelihood it is not straightforward difficult because it is required to optimize $P(X = (x_1, \dots, x_K))$ with respect $\mu$ and $\Sigma$.

@@ -276,7 +276,6 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
   
   loglik  = 0;
   for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-  Rcout << "First guess LogLik: " << logLikelihood(X, mu.row(0).t(), sigma = sigma, nmont) << std::endl;
   
   do{
     cur_iter++;
@@ -296,7 +295,6 @@ List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
       Rcout << "Stop determinant close to zero" << std::endl;
       break;
     }
-    Rcout << "Iter: " << cur_iter << " LogLik:" << logLikelihood(X, mu.row(0).t(), sigma = sigma, nmont) << std::endl;
   } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter);
   
   arma::mat A_comp = arma::zeros<arma::mat>(n, K);

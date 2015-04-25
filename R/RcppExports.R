@@ -51,6 +51,30 @@ mvf <- function(a, mu, inv_sigma, x) {
 
 #' Finds the mean and covariance of a normal multinomial distribution
 #' 
+#' @param a aln hidden obeservation
+#' @param mu mean parameter for the mean in a aln-normal distribution
+#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param x normal-multinomial observation
+#' @return Loglikelihood og oberserved data
+#' @export
+mvf_deriv <- function(I, a, mu, inv_sigma, x) {
+    .Call('normalmultinomial_mvf_deriv', PACKAGE = 'normalmultinomial', I, a, mu, inv_sigma, x)
+}
+
+#' Finds the mean and covariance of a normal multinomial distribution
+#' 
+#' @param a aln hidden obeservation
+#' @param mu mean parameter for the mean in a aln-normal distribution
+#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param x normal-multinomial observation
+#' @return Loglikelihood og oberserved data
+#' @export
+mvf_deriv2 <- function(I, J, a, mu, inv_sigma, x) {
+    .Call('normalmultinomial_mvf_deriv2', PACKAGE = 'normalmultinomial', I, J, a, mu, inv_sigma, x)
+}
+
+#' Finds the mean and covariance of a normal multinomial distribution
+#' 
 #' @param A aln hidden obeservations
 #' @param mu mean parameter for the mean in a aln-normal distribution
 #' @param sigma parameter for the sigma in a aln-normal distribution
@@ -58,8 +82,8 @@ mvf <- function(a, mu, inv_sigma, x) {
 #' @return Loglikelihood oberserved data
 #' @export
 #' 
-Mstep <- function(A, mu, inv_sigma, X, eps = 1e-8) {
-    .Call('normalmultinomial_Mstep', PACKAGE = 'normalmultinomial', A, mu, inv_sigma, X, eps)
+Mstep <- function(A, mu, inv_sigma, X, eps = 1e-8, max_iter = 100L) {
+    .Call('normalmultinomial_Mstep', PACKAGE = 'normalmultinomial', A, mu, inv_sigma, X, eps, max_iter)
 }
 
 #' Finds the mean and covariance of a normal multinomial distribution
@@ -67,15 +91,15 @@ Mstep <- function(A, mu, inv_sigma, X, eps = 1e-8) {
 #' @param X normal-multinomial sample
 #' @param A initial values
 #' @export
-adjustNormalMultinomial2 <- function(X, A, eps, iter, minSigma) {
-    .Call('normalmultinomial_adjustNormalMultinomial2', PACKAGE = 'normalmultinomial', X, A, eps, iter, minSigma)
+adjustNormalMultinomial_internal <- function(X, A, eps = 1e-04, iter = 100L, minSigma = 1e-06) {
+    .Call('normalmultinomial_adjustNormalMultinomial_internal', PACKAGE = 'normalmultinomial', X, A, eps, iter, minSigma)
 }
 
 #' Finds the mean and covariance of a normal multinomial distribution
 #' 
 #' @param X normal-multinomial sample
 #' @export
-adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, prop = 0.3, minSigma = 1e-5) {
-    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, prop, minSigma)
+adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, prop = 0.3, minSigma = 1e-5, nmont = 100) {
+    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, prop, minSigma, nmont)
 }
 
