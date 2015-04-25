@@ -99,7 +99,7 @@ adjustNormalMultinomial_internal <- function(X, A, eps = 1e-04, iter = 100L, min
 #' 
 #' @param X normal-multinomial sample
 #' @export
-adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, prop = 0.3, minSigma = 1e-5, nmont = 100) {
-    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, prop, minSigma, nmont)
+adjustNormalMultinomial <- function(X, eps = 1e-15, iter = 100L, prop = 0.3, minSigma = 1e-5) {
+    .Call('normalmultinomial_adjustNormalMultinomial', PACKAGE = 'normalmultinomial', X, eps, iter, prop, minSigma)
 }
 

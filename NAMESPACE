@@ -2,8 +2,10 @@
 
 export(Mstep)
 export(adjustNormalMultinomial)
-export(adjustNormalMultinomial2)
+export(adjustNormalMultinomial_internal)
 export(mvf)
+export(mvf_deriv)
+export(mvf_deriv2)
 export(rmultinomial)
 export(rnorm.multinom)
 export(rnormal)

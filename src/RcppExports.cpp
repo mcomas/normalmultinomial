@@ -135,8 +135,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // adjustNormalMultinomial
-List adjustNormalMultinomial(arma::mat X, double eps, int iter, double prop, double minSigma, double nmont);
-RcppExport SEXP normalmultinomial_adjustNormalMultinomial(SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP propSEXP, SEXP minSigmaSEXP, SEXP nmontSEXP) {
+List adjustNormalMultinomial(arma::mat X, double eps, int iter, double prop, double minSigma);
+RcppExport SEXP normalmultinomial_adjustNormalMultinomial(SEXP XSEXP, SEXP epsSEXP, SEXP iterSEXP, SEXP propSEXP, SEXP minSigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -145,8 +145,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< double >::type prop(propSEXP);
     Rcpp::traits::input_parameter< double >::type minSigma(minSigmaSEXP);
-    Rcpp::traits::input_parameter< double >::type nmont(nmontSEXP);
-    __result = Rcpp::wrap(adjustNormalMultinomial(X, eps, iter, prop, minSigma, nmont));
+    __result = Rcpp::wrap(adjustNormalMultinomial(X, eps, iter, prop, minSigma));
     return __result;
 END_RCPP
 }
