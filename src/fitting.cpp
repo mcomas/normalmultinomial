@@ -146,6 +146,45 @@ double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma){
 //' @return Loglikelihood og oberserved data
 //' @export
 // [[Rcpp::export]]
+double mvf_mult(arma::vec a, arma::vec x){
+  int k = a.size();
+  int K = k +1;
+  
+  double x_total = 0;
+  for(int i = 0; i < K; i++) x_total += x[i];
+  
+  double x_total_fact = log(x_total);
+  for(int l = 1; l < x_total; l++) x_total_fact += log(l);
+  
+  double x_parts_fact = 0;
+  for(int i = 0; i <= K; i++){
+    for(int l = 1; l <= x[i]; l++){
+      x_parts_fact += log(l);
+    }
+  }
+  
+  double mult_const = 0;
+  mult_const += (x_total_fact - x_parts_fact);
+  
+  double kappa = 1;
+  for(int i = 0; i < k; i++) kappa += exp(a[i]);
+  double multinom = -x[k] * log(kappa);
+  for(int i = 0; i < k; i++) multinom += x[i] * ( a[i] - log(kappa));
+  
+  double mult = mult_const + multinom;
+  return(mult);
+  //return( constant + log_norm(0) + multinom );
+}
+
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param a aln hidden obeservation
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param x normal-multinomial observation
+//' @return Loglikelihood og oberserved data
+//' @export
+// [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   int K = k +1;
