@@ -346,6 +346,7 @@ List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int ni
   arma::mat Z = join_cols(Z1, Z2);
   arma::mat Ap = arma::mat(nsim2, k);
 
+  arma::mat A = arma::mat(n, k);
   for(int iter = 0; iter < niter; iter++){
     // E-step
     Ap = arma::repmat(mu, nsim2, 1) + Z * arma::chol(sigma);
@@ -358,13 +359,14 @@ List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int ni
     for(int i=0; i < n; i++){
       mult_const[i] = mvf_multinom_const(X.row(i).t());
     }
+    
     for(int i=0; i < n; i++){
       for(int l=0; l < nsim2; l++){
         lik[l] = mult_const[i] + mvf_multinom_mult(Ap.row(l).t(), X.row(i).t());
       }
       lik = exp(lik);
       for(int j1 = 0; j1 < k; j1++){
-        Ap_m1(0,j1) += mean(Ap.col(j1) % lik) / mean(lik);
+        Ap_m1(0,j1) += A(i, j1) = mean(Ap.col(j1) % lik) / mean(lik);
         for(int j2 = 0; j2 < k; j2++){
           Ap_m2(j1, j2) += mean(Ap.col(j1) % Ap.col(j2) % lik) / mean(lik);
         }
@@ -374,7 +376,15 @@ List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int ni
     mu = Ap_m1/n;
     sigma = Ap_m2/n - mu.t() * mu;
   }
-  return List::create(mu, sigma);
+  
+  arma::mat P = arma::mat(n, k+1);
+  for(int i = 0;i<n;i++){
+    double accum = 1;
+    P(i,k) = 1;
+    for(int j = 0; j<k; j++) accum += P(i,j) = exp(A(i,j));
+    for(int j = 0; j<=k; j++) P(i,j) /= accum;
+  }
+  return List::create(mu, sigma, P);
 }
 
 
