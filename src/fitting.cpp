@@ -125,6 +125,28 @@ double factorial2(double x){
 //' @return Loglikelihood og oberserved data
 //' @export
 // [[Rcpp::export]]
+double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
+  int k = a.size();
+  int K = k +1;
+  
+  double norm_const = -0.5 * k * log(2*PI) - 0.5 * log(det(inv_sigma));
+  arma::mat log_norm =  -0.5 * (a-mu).t() * inv_sigma * (a-mu);
+  
+  double norm = norm_const + log_norm(0);
+
+  return(norm);
+  //return( constant + log_norm(0) + multinom );
+}
+
+//' Finds the mean and covariance of a normal multinomial distribution
+//' 
+//' @param a aln hidden obeservation
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @param x normal-multinomial observation
+//' @return Loglikelihood og oberserved data
+//' @export
+// [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   int K = k +1;
@@ -159,6 +181,7 @@ double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   return(norm + mult);
   //return( constant + log_norm(0) + multinom );
 }
+
 
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
