@@ -67,7 +67,7 @@ arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size){
   return(rmultinomial(A, size));
 }
 
-// [[Rcpp::export]]
+
 double logLikelihood(arma::mat X, arma::vec mu, arma::mat sigma, int N = 100){
   int n = X.n_rows;
   int K = X.n_cols;
@@ -100,7 +100,6 @@ double logLikelihood(arma::mat X, arma::vec mu, arma::mat sigma, int N = 100){
       for(int  j=0; j < K; j++) loglik_obs[i] += X(i,j) * log( P(i,j) / kappa);
     }
     E += exp(loglik_obs);
-    //Rcout << exp(loglik_obs) << std::endl;
   }
   
   E /= (2*N);
@@ -116,15 +115,6 @@ double factorial2(double x){
   return(res);
 }
 
-//' Finds the mean and covariance of a normal multinomial distribution
-//' 
-//' @param a aln hidden obeservation
-//' @param mu mean parameter for the mean in a aln-normal distribution
-//' @param sigma parameter for the sigma in a aln-normal distribution
-//' @param x normal-multinomial observation
-//' @return Loglikelihood og oberserved data
-//' @export
-// [[Rcpp::export]]
 double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma){
   int k = a.size();
   
@@ -134,19 +124,41 @@ double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma){
   double norm = norm_const + log_norm(0);
 
   return(norm);
-  //return( constant + log_norm(0) + multinom );
 }
 
-//' Finds the mean and covariance of a normal multinomial distribution
-//' 
-//' @param a aln hidden obeservation
-//' @param mu mean parameter for the mean in a aln-normal distribution
-//' @param sigma parameter for the sigma in a aln-normal distribution
-//' @param x normal-multinomial observation
-//' @return Loglikelihood og oberserved data
-//' @export
-// [[Rcpp::export]]
-double mvf_mult(arma::vec a, arma::vec x){
+double mvf_multinom_const(arma::vec x){
+  int K = x.size();
+  
+  double x_total = 0;
+  for(int i = 0; i < K; i++) x_total += x[i];
+  
+  double x_total_fact = log(x_total);
+  for(int l = 1; l < x_total; l++) x_total_fact += log(l);
+  
+  double x_parts_fact = 0;
+  for(int i = 0; i < K; i++){
+    for(int l = 2; l <= x[i]; l++){
+      x_parts_fact += log(l);
+    }
+  }
+  
+  double mult_const = 0;
+  mult_const += (x_total_fact - x_parts_fact);
+  return(mult_const);
+}
+
+double mvf_multinom_mult(arma::vec a, arma::vec x){
+  int k = a.size();
+  
+  double kappa = 1;
+  for(int i = 0; i < k; i++) kappa += exp(a[i]);
+  double multinom = -x[k] * log(kappa);
+  for(int i = 0; i < k; i++) multinom += x[i] * ( a[i] - log(kappa));
+  
+  return(multinom);
+}
+
+double mvf_multinom(arma::vec a, arma::vec x){
   int k = a.size();
   int K = k +1;
   
@@ -173,18 +185,9 @@ double mvf_mult(arma::vec a, arma::vec x){
   
   double mult = mult_const + multinom;
   return(mult);
-  //return( constant + log_norm(0) + multinom );
 }
 
-//' Finds the mean and covariance of a normal multinomial distribution
-//' 
-//' @param a aln hidden obeservation
-//' @param mu mean parameter for the mean in a aln-normal distribution
-//' @param sigma parameter for the sigma in a aln-normal distribution
-//' @param x normal-multinomial observation
-//' @return Loglikelihood og oberserved data
-//' @export
-// [[Rcpp::export]]
+
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   int K = k +1;
@@ -217,10 +220,9 @@ double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   
   double mult = mult_const + multinom;
   return(norm + mult);
-  //return( constant + log_norm(0) + multinom );
 }
 
-
+/*
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param a aln hidden obeservation
@@ -230,6 +232,7 @@ double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
 //' @return Loglikelihood og oberserved data
 //' @export
 // [[Rcpp::export]]
+ */
 double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   arma::mat log_norm =  -(a-mu).t() * inv_sigma(arma::span::all, I);
@@ -241,7 +244,7 @@ double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::ve
   for(int i = I+1; i < k+1; i++) mult += x(i) * (-exp(a(I))) / kappa;
   return log_norm(0) + mult;
 }
-
+/*
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param a aln hidden obeservation
@@ -251,6 +254,7 @@ double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::ve
 //' @return Loglikelihood og oberserved data
 //' @export
 // [[Rcpp::export]]
+ */
 double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   
@@ -265,13 +269,22 @@ double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, 
   return mult;
 }
 
-
-double loglike(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X) {
+//' Evaluates the log-likelihood of thenormal multinomial distribution given the hidden observation
+//' 
+//' @param X normal-multinomial observations
+//' @param A aln non-observed obeservations
+//' @param mu mean parameter for the mean in a aln-normal distribution
+//' @param sigma parameter for the sigma in a aln-normal distribution
+//' @return Loglikelihood of the oberserved and non-observed data
+//' @export
+// [[Rcpp::export]]
+double logLike(arma::mat X, arma::mat A, arma::vec mu, arma::mat inv_sigma) {
   double loglik  = 0;
   for(int l = 0; l< A.n_rows; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   return(loglik);
 }
 
+/*
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param A aln hidden obeservations
@@ -282,6 +295,7 @@ double loglike(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X) {
 //' @export
 //' 
 // [[Rcpp::export]]
+ */
 arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X, 
                 double eps = 1e-8, int max_iter = 100) {
   int n = A.n_rows;
@@ -313,68 +327,66 @@ arma::mat Mstep(arma::mat A, arma::vec mu, arma::mat inv_sigma, arma::mat X,
   
 }
 
-//' Finds the mean and covariance of a normal multinomial distribution
+//' Compute the mean and covariance of a normal multinomial distribution after itering an EM-algorithm
 //' 
 //' @param X normal-multinomial sample
-//' @param A initial values
+//' @param mu initial meean estimate
+//' @param sigma initial covariance estimate
+//' @param nsim number of repetitions for the montecarlo integration process
+//' @param niter number of iteration
 //' @export
 // [[Rcpp::export]]
-List adjustNormalMultinomial_internal(arma::mat X, arma::mat A,
-                                      double eps = 1e-04, int iter = 100, 
-                                      double minSigma = 1e-06){
+List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int niter = 1){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
-  
-  double tol = pow(eps, 2);
-  int cur_iter = 0;
-  
-  arma::mat mu = mean(A);
-  arma::mat sigma = cov(A);
-  arma::mat inv_sigma = sigma.i();
+  int nsim2 = 2 * nsim;
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap = arma::mat(nsim2, k);
+
+  for(int iter = 0; iter < niter; iter++){
+    // E-step
+    Ap = arma::repmat(mu, nsim2, 1) + Z * arma::chol(sigma);
+    arma::vec lik = arma::zeros<arma::vec>(nsim2);
     
-  double loglik_prev, loglik = 0;
-  do{
-    cur_iter++;
-    loglik_prev = loglik;
+    arma::mat Ap_m1 = arma::zeros(1, k);
+    arma::mat Ap_m2 = arma::zeros(k, k);
     
-    A = Mstep(A, mu.row(0).t(), inv_sigma, X);
-      
-    mu = mean(A);
-    sigma = cov(A);
-    inv_sigma = sigma.i();
-    
-    loglik  = 0;
-    for(int l = 0; l< n; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
-    
-    if( det(sigma) < 1e-20){
-      Rcout << "Stop determinant close to zero" << std::endl;
-      break;
+    arma::vec mult_const = arma::vec(n);
+    for(int i=0; i < n; i++){
+      mult_const[i] = mvf_multinom_const(X.row(i).t());
     }
-  } while (pow(loglik_prev - loglik, 2) > tol && cur_iter < iter);
-  
-  arma::mat A_comp = arma::zeros<arma::mat>(n, K);
-  for(int i = 0; i < n; i ++){
-    double kappa = 1;
-    for(int j = 0; j < k; j++){
-      kappa += A_comp(i,j) = exp(A(i,j));
+    for(int i=0; i < n; i++){
+      for(int l=0; l < nsim2; l++){
+        lik[l] = mult_const[i] + mvf_multinom_mult(Ap.row(l).t(), X.row(i).t());
+      }
+      lik = exp(lik);
+      for(int j1 = 0; j1 < k; j1++){
+        Ap_m1(0,j1) += mean(Ap.col(j1) % lik) / mean(lik);
+        for(int j2 = 0; j2 < k; j2++){
+          Ap_m2(j1, j2) += mean(Ap.col(j1) % Ap.col(j2) % lik) / mean(lik);
+        }
+      }
     }
-    A_comp(i,k) = 1;
-    for(int j = 0; j < K; j++){
-      A_comp(i,j) /= kappa;
-    }
+    // M-step
+    mu = Ap_m1/n;
+    sigma = Ap_m2/n - mu.t() * mu;
   }
-  return List::create(mu, sigma, A_comp, cur_iter, A, loglik, loglik_prev);
+  return List::create(mu, sigma);
 }
+
 
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
 //' @param X normal-multinomial sample
+//' @param nsim number of repetitions for the montecarlo integration process
+//' @param niter number of iterations for the EM-algorithm
+//' @param prop first 0 imputation
 //' @export
 // [[Rcpp::export]]
-List adjustNormalMultinomial(arma::mat X,
-                             double eps = 1e-15, int iter = 100, 
-                             double prop = 0.3, double minSigma = 1e-5){
+List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20, double prop = 0.66){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
@@ -397,12 +409,12 @@ List adjustNormalMultinomial(arma::mat X,
             A(i,j) = log(X(i,j)/prop);
           }          
         }
-
+        
       }
     }
   }
-  List list = adjustNormalMultinomial_internal(X, A, eps, iter, minSigma);
+  arma::mat mu = mean(A);
+  arma::mat sigma = cov(A);
+  List list = EM_step(X, mu, sigma, nsim, niter);
   return list;
 }
-
-

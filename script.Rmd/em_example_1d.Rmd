@@ -1,0 +1,75 @@
+---
+title: "EM-algorithm example \\(an univariant case)"
+author: "Marc Comas-Cufí"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{EM-algorithm example \\(an univariant case)}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r}
+library(normalmultinomial)
+set.seed(1)
+```
+
+Let's start fith the following distribution
+
+```{r}
+(mu <- 2)
+(Sigma <- matrix(20))
+```
+
+```{r, warning=F}
+head(X <- rnormalmultinomial(mu = mu, sigma = Sigma, size = sample(20:80, 100, replace=T)))
+```
+
+### M-step
+
+We start with an estimation of non-observable sample $A$.
+
+```{r}
+Xt = X
+Xt[Xt == 0] = 0.66
+A = log(Xt[,1]/Xt[,2])
+```
+
+With the observations $A$, we have the estimators
+
+```{r}
+(m_t0 <- mean(A))
+(Sigma_t0 = matrix(var(A)))
+```
+
+### E-step
+
+With the parameters `m_t`and `Sigma_t` estimated, we need to estimate $E_{A/(m\_t, sigma\_t)}\left[ a_i \right]$ and $E_{A/(m\_t, sigma\_t)} \left[ a_i^2 \right]$ for each $x_i$.
+
+```{r}
+moments = function(x, m, inv_Sigma, step=0.1){
+  Ap = seq(-50, 50, step)
+  lik = exp(sapply(Ap, mvf, m, inv_Sigma, x))
+  c( sum(Ap * lik * step), sum(Ap^2 * lik * step)) / sum(lik * step)
+}
+
+mom = t( apply(Xt, 1, moments, m_t0, solve(Sigma_t0), step = 0.1) )
+
+m_t <- mean(mom[,1])
+Sigma_t <- mean(mom[,2]) - m_t^2
+```
+
+
+```{r}
+nsteps = 40
+res = matrix(0, ncol=3, nrow=nsteps)
+for(i in 1:nsteps){
+  mom = t( apply(Xt, 1, moments, m_t, solve(Sigma_t), step = 0.1) )
+  
+  res[i,1] <- i
+  res[i,2] <- (m_t <- mean(mom[,1]))
+  res[i,3] <- as.numeric(Sigma_t <- mean(mom[,2]) - m_t^2)
+}
+colnames(res) = c('step', 'mean', 'variance')
+data.frame( rbind( matrix(c(0,m_t0, Sigma_t0), nrow=1), res) )
+```

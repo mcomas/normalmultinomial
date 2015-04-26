@@ -138,10 +138,10 @@ To calculate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ we need to calc
 \[
 \begin{align}
 E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right] &= \int_{a_i \in \mathbb{R}^k} a_i f(a_i, x_i; \mu^{(s)}, \Sigma^{(s)}) da_i \\
-&= \int_{a_i \in \mathbb{R}^k} a_i  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i,
+&= \int_{a_i \in \mathbb{R}^k} a_i  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i \\
+&= \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} \int_{a_i \in \mathbb{R}^k} a_i \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}}   e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}),
 \end{align}
 \]
-
 
 #### $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ estimation
 
@@ -150,6 +150,7 @@ To calculate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ we need t
 \[
 \begin{align}
 E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right] &= \int_{a_i \in \mathbb{R}^k} a_i a_i^T f(a_i, x_i; \mu^{(s)}, \Sigma^{(s)}) da_i \\
-&= \int_{a_i \in \mathbb{R}^k} a_i a_i^T  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i,
+&= \int_{a_i \in \mathbb{R}^k} a_i a_i^T  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i\\
+&= \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} \int_{a_i \in \mathbb{R}^k} a_i a_i^T \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} dMVN(a_i ;\mu^{(s)}, \Sigma^{(s)}),
 \end{align}
 \]
