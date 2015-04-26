@@ -45,6 +45,30 @@ logLikelihood <- function(X, mu, sigma, N = 100L) {
 #' @param x normal-multinomial observation
 #' @return Loglikelihood og oberserved data
 #' @export
+mvf_norm <- function(a, mu, inv_sigma) {
+    .Call('normalmultinomial_mvf_norm', PACKAGE = 'normalmultinomial', a, mu, inv_sigma)
+}
+
+#' Finds the mean and covariance of a normal multinomial distribution
+#' 
+#' @param a aln hidden obeservation
+#' @param mu mean parameter for the mean in a aln-normal distribution
+#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param x normal-multinomial observation
+#' @return Loglikelihood og oberserved data
+#' @export
+mvf_mult <- function(a, x) {
+    .Call('normalmultinomial_mvf_mult', PACKAGE = 'normalmultinomial', a, x)
+}
+
+#' Finds the mean and covariance of a normal multinomial distribution
+#' 
+#' @param a aln hidden obeservation
+#' @param mu mean parameter for the mean in a aln-normal distribution
+#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param x normal-multinomial observation
+#' @return Loglikelihood og oberserved data
+#' @export
 mvf <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }

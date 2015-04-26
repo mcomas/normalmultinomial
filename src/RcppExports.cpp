@@ -58,6 +58,31 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// mvf_norm
+double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma);
+RcppExport SEXP normalmultinomial_mvf_norm(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    __result = Rcpp::wrap(mvf_norm(a, mu, inv_sigma));
+    return __result;
+END_RCPP
+}
+// mvf_mult
+double mvf_mult(arma::vec a, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_mult(SEXP aSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf_mult(a, x));
+    return __result;
+END_RCPP
+}
 // mvf
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
 RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
