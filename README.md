@@ -12,7 +12,7 @@ If you want to try it, you can install it using the following commands.
 devtools::install_github('mcomas/normalmultinomial')
 ```
 
-I am working with Ubuntu and to compile the packages I've needed to set the C+ compiler.
+I am working with Ubuntu and to compile the packages I've needed to set the C++11 compiler before installation by typing
 
 ```R
 Sys.setenv("PKG_CXXFLAGS"="-std=c++11")
