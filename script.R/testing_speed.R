@@ -1,4 +1,4 @@
-Rcpp::sourceCpp('src/fitting.cpp')
+library(normalmultinomial)
 library(microbenchmark)
 
 mu = c(1,1,1,1)
