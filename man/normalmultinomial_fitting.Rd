@@ -4,7 +4,8 @@
 \alias{normalmultinomial_fitting}
 \title{Finds the mean and covariance of a normal multinomial distribution}
 \usage{
-normalmultinomial_fitting(X, nsim = 1000L, niter = 20L, prop = 0.66)
+normalmultinomial_fitting(X, nsim = 1000L, niter = 20L, prop = 0.66,
+  version = 0L, nthreads = 1L)
 }
 \arguments{
 \item{X}{normal-multinomial sample}

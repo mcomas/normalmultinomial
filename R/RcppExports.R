@@ -57,6 +57,30 @@ EM_step <- function(X, mu, sigma, nsim = 1000L, niter = 1L) {
     .Call('normalmultinomial_EM_step', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim, niter)
 }
 
+#' Compute the mean and covariance of a normal multinomial distribution after itering an EM-algorithm
+#' 
+#' @param X normal-multinomial sample
+#' @param mu initial meean estimate
+#' @param sigma initial covariance estimate
+#' @param nsim number of repetitions for the montecarlo integration process
+#' @param niter number of iteration
+#' @export
+EM_step2 <- function(X, mu, sigma, nsim = 1000L, niter = 1L) {
+    .Call('normalmultinomial_EM_step2', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim, niter)
+}
+
+#' Compute the mean and covariance of a normal multinomial distribution after itering an EM-algorithm
+#' 
+#' @param X normal-multinomial sample
+#' @param mu initial meean estimate
+#' @param sigma initial covariance estimate
+#' @param nsim number of repetitions for the montecarlo integration process
+#' @param niter number of iteration
+#' @export
+EM_step_OMP <- function(X, mu, sigma, nsim = 1000L, niter = 1L, nthreads = 1L) {
+    .Call('normalmultinomial_EM_step_OMP', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim, niter, nthreads)
+}
+
 #' Finds the mean and covariance of a normal multinomial distribution
 #' 
 #' @param X normal-multinomial sample
@@ -64,7 +88,7 @@ EM_step <- function(X, mu, sigma, nsim = 1000L, niter = 1L) {
 #' @param niter number of iterations for the EM-algorithm
 #' @param prop first 0 imputation
 #' @export
-normalmultinomial_fitting <- function(X, nsim = 1000L, niter = 20L, prop = 0.66) {
-    .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop)
+normalmultinomial_fitting <- function(X, nsim = 1000L, niter = 20L, prop = 0.66, version = 0L, nthreads = 1L) {
+    .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version, nthreads)
 }
 

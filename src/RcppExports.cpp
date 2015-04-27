@@ -73,9 +73,40 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// EM_step2
+List EM_step2(arma::mat X, arma::mat mu, arma::mat sigma, int nsim, int niter);
+RcppExport SEXP normalmultinomial_EM_step2(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP, SEXP niterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
+    __result = Rcpp::wrap(EM_step2(X, mu, sigma, nsim, niter));
+    return __result;
+END_RCPP
+}
+// EM_step_OMP
+List EM_step_OMP(arma::mat X, arma::mat mu, arma::mat sigma, int nsim, int niter, int nthreads);
+RcppExport SEXP normalmultinomial_EM_step_OMP(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP, SEXP niterSEXP, SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
+    Rcpp::traits::input_parameter< int >::type nthreads(nthreadsSEXP);
+    __result = Rcpp::wrap(EM_step_OMP(X, mu, sigma, nsim, niter, nthreads));
+    return __result;
+END_RCPP
+}
 // normalmultinomial_fitting
-List normalmultinomial_fitting(arma::mat X, int nsim, int niter, double prop);
-RcppExport SEXP normalmultinomial_normalmultinomial_fitting(SEXP XSEXP, SEXP nsimSEXP, SEXP niterSEXP, SEXP propSEXP) {
+List normalmultinomial_fitting(arma::mat X, int nsim, int niter, double prop, int version, int nthreads);
+RcppExport SEXP normalmultinomial_normalmultinomial_fitting(SEXP XSEXP, SEXP nsimSEXP, SEXP niterSEXP, SEXP propSEXP, SEXP versionSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -83,7 +114,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
     Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
     Rcpp::traits::input_parameter< double >::type prop(propSEXP);
-    __result = Rcpp::wrap(normalmultinomial_fitting(X, nsim, niter, prop));
+    Rcpp::traits::input_parameter< int >::type version(versionSEXP);
+    Rcpp::traits::input_parameter< int >::type nthreads(nthreadsSEXP);
+    __result = Rcpp::wrap(normalmultinomial_fitting(X, nsim, niter, prop, version, nthreads));
     return __result;
 END_RCPP
 }
