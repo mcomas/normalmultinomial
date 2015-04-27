@@ -3,14 +3,32 @@
 #include <RcppArmadillo.h>
 #include <random>
 #include <vector>
+#include <omp.h>
 
 // Enable C++11 via this plugin (Rcpp 0.10.3 or later)
 // [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::plugins(openmp)]]
 
 using namespace Rcpp;
 
 const double log2pi = std::log(2.0 * M_PI);
 
+
+
+//void omp(int nthreads = 4){
+//
+//  Rcout << "Processors: " << omp_get_num_procs() << std::endl;
+//  Rcout << "Max threads: " << omp_get_max_threads() << std::endl;
+//
+//  int nthr = min(omp_get_max_threads(), nthreads);
+//  int id;
+//  #pragma omp parallel num_threads(nthr)  \
+//  private ( id )
+//  {
+//    id = omp_get_thread_num ( );
+//    Rcout << "  This is process " << id << "\n";
+//  }
+//}
 
 //' Simulate variables following a normal distribution. 
 //' 
@@ -146,6 +164,7 @@ double mvf_multinom_const(arma::vec x){
   mult_const += (x_total_fact - x_parts_fact);
   return(mult_const);
 }
+
 
 double mvf_multinom_mult(arma::vec a, arma::vec x){
   int k = a.size();
@@ -387,6 +406,141 @@ List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int ni
   return List::create(mu, sigma, P);
 }
 
+//' Compute the mean and covariance of a normal multinomial distribution after itering an EM-algorithm
+//' 
+//' @param X normal-multinomial sample
+//' @param mu initial meean estimate
+//' @param sigma initial covariance estimate
+//' @param nsim number of repetitions for the montecarlo integration process
+//' @param niter number of iteration
+//' @export
+// [[Rcpp::export]]
+List EM_step2(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int niter = 1){
+  int n = X.n_rows;
+  int K = X.n_cols;
+  int k = K - 1;
+  int nsim2 = 2 * nsim;
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap = arma::mat(nsim2, k);
+
+  arma::mat A = arma::mat(n, k);
+  arma::mat Ap_m1 = arma::zeros(1, k);
+  arma::mat Ap_m2 = arma::zeros(k, k);
+  
+  arma::vec lik = arma::vec(nsim2);
+  arma::vec mult_const = arma::vec(n);
+  for(int i=0; i < n; i++){
+    mult_const[i] = mvf_multinom_const(X.row(i).t());
+  }
+
+  arma::mat MU = arma::repmat(mu, nsim2, 1);
+  arma::mat SIGMA = arma::chol(sigma);
+  for(int iter = 0; iter < niter; iter++){
+    // E-step
+    Ap = MU + Z * SIGMA;
+    
+    lik.zeros();
+    
+    for(int i=0; i < n; i++){
+      for(int l=0; l < nsim2; l++){
+        lik[l] = mult_const[i] + mvf_multinom_mult(Ap.row(l).t(), X.row(i).t());
+      }
+      lik = exp(lik);
+      double mean_lik = mean(lik);
+      for(int j1 = 0; j1 < k; j1++){
+        Ap_m1(0,j1) += A(i, j1) = mean(Ap.col(j1) % lik) / mean_lik;
+        for(int j2 = 0; j2 < k; j2++){
+          Ap_m2(j1, j2) += mean(Ap.col(j1) % Ap.col(j2) % lik) / mean_lik;
+        }
+      }
+    }
+    // M-step
+    mu = Ap_m1/n;
+    sigma = Ap_m2/n - mu.t() * mu;
+  }
+  
+  arma::mat P = arma::mat(n, k+1);
+  for(int i = 0;i<n;i++){
+    double accum = 1;
+    P(i,k) = 1;
+    for(int j = 0; j<k; j++) accum += P(i,j) = exp(A(i,j));
+    for(int j = 0; j<=k; j++) P(i,j) /= accum;
+  }
+  return List::create(mu, sigma, P);
+}
+
+//' Compute the mean and covariance of a normal multinomial distribution after itering an EM-algorithm
+//' 
+//' @param X normal-multinomial sample
+//' @param mu initial meean estimate
+//' @param sigma initial covariance estimate
+//' @param nsim number of repetitions for the montecarlo integration process
+//' @param niter number of iteration
+//' @export
+// [[Rcpp::export]]
+List EM_step_OMP(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int niter = 1,
+int nthreads = 1){
+  int n = X.n_rows;
+  int K = X.n_cols;
+  int k = K - 1;
+  int nsim2 = 2 * nsim;
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap = arma::mat(nsim2, k);
+
+  arma::mat A = arma::mat(n, k);
+  arma::mat Ap_m1 = arma::zeros(1, k);
+  arma::mat Ap_m2 = arma::zeros(k, k);
+  
+  arma::vec lik = arma::vec(nsim2);
+  arma::vec mult_const = arma::vec(n);
+  for(int i=0; i < n; i++){
+    mult_const[i] = mvf_multinom_const(X.row(i).t());
+  }
+
+  arma::mat MU = arma::repmat(mu, nsim2, 1);
+  arma::mat SIGMA = arma::chol(sigma);
+  for(int iter = 0; iter < niter; iter++){
+    // E-step
+    Ap = MU + Z * SIGMA;
+    
+    lik.zeros();
+    
+    for(int i=0; i < n; i++){
+      #pragma omp parallel num_threads(nthreads)
+      {
+        #pragma omp for
+        for(int l=0; l < nsim2; l++){
+          lik[l] = exp(mult_const[i] + mvf_multinom_mult(Ap.row(l).t(), X.row(i).t()));
+        }
+      }
+      lik = exp(lik);
+      double mean_lik = mean(lik);
+      
+      for(int j1 = 0; j1 < k; j1++){
+        Ap_m1(0,j1) += A(i, j1) = mean(Ap.col(j1) % lik) / mean_lik;
+        for(int j2 = 0; j2 < k; j2++){
+          Ap_m2(j1, j2) += mean(Ap.col(j1) % Ap.col(j2) % lik) / mean_lik;
+        }
+      }
+    }
+    // M-step
+    mu = Ap_m1/n;
+    sigma = Ap_m2/n - mu.t() * mu;
+  }
+  
+  arma::mat P = arma::mat(n, k+1);
+  for(int i = 0;i<n;i++){
+    double accum = 1;
+    P(i,k) = 1;
+    for(int j = 0; j<k; j++) accum += P(i,j) = exp(A(i,j));
+    for(int j = 0; j<=k; j++) P(i,j) /= accum;
+  }
+  return List::create(mu, sigma, P);
+}
 
 //' Finds the mean and covariance of a normal multinomial distribution
 //' 
@@ -396,12 +550,17 @@ List EM_step(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int ni
 //' @param prop first 0 imputation
 //' @export
 // [[Rcpp::export]]
-List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20, double prop = 0.66){
+List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20, 
+double prop = 0.66, int version = 0, int nthreads = 1){
   int n = X.n_rows;
   int K = X.n_cols;
   int k = K - 1;
   
-  Rcout << "Fitting a normal-multinomial distribution" << std::endl;
+  if(omp_get_max_threads() < nthreads){
+    nthreads = omp_get_max_threads();
+    Rcout << "Threads reduced to" << nthreads << std::endl;
+  }
+  //Rcout << "Fitting a normal-multinomial distribution" << std::endl;
   
   // Initialize A, maybe better outsie C++ code
   arma::mat A = arma::mat(n,k);
@@ -425,6 +584,14 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20, dou
   }
   arma::mat mu = mean(A);
   arma::mat sigma = cov(A);
-  List list = EM_step(X, mu, sigma, nsim, niter);
+  List list;
+  if(version == 2){
+     list =EM_step2(X, mu, sigma, nsim, niter);
+  }else if (version == 3){
+    list = EM_step_OMP(X, mu, sigma, nsim, niter, nthreads);
+  }else{
+     list = EM_step(X, mu, sigma, nsim, niter);
+  }
+  
   return list;
 }
