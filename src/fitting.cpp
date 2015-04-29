@@ -442,6 +442,8 @@ List EM_step2(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000, int n
     Ap = MU + Z * SIGMA;
     
     lik.zeros();
+    Ap_m1.zeros();
+    Ap_m2.zeros();
     
     for(int i=0; i < n; i++){
       for(int l=0; l < nsim2; l++){
@@ -508,6 +510,8 @@ int nthreads = 1){
     Ap = MU + Z * SIGMA;
     
     lik.zeros();
+    Ap_m1.zeros();
+    Ap_m2.zeros();
     
     for(int i=0; i < n; i++){
       #pragma omp parallel num_threads(nthreads)
