@@ -1,9 +1,12 @@
-(N <- 500)
+library(mixpack)
+
+(N <- 1000)
 (MU <- c(0,0))
 
 SIGMA.ilr <- matrix(c(1,0,
-                       0,1), nrow = 2)
-ilr_to_alr = MASS::ginv(ilrBase(D = 3)) %*% matrix(c(1,0,-1,
+                       0,1), nrow = 2) * 0.05
+ilrB = t(clr_coordinates(t(matrix(unlist(ilr_basis(3)), ncol=2))))
+ilr_to_alr = MASS::ginv(ilrB) %*% matrix(c(1,0,-1,
                                                      0,1,-1), ncol=2)
 SIGMA = t(ilr_to_alr) %*% SIGMA.ilr %*% ilr_to_alr
 
@@ -21,4 +24,4 @@ probs = as.data.frame(sample_nm$probs)
 ggtern() +
   geom_point(data=probs, aes(x = V1, y = V2, z = V3))
 
-plot(as.data.frame(ilr(probs)), asp = 1)
+# plot(as.data.frame(ilr_coordinates(probs)), asp = 1)
