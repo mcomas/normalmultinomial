@@ -38,7 +38,6 @@ arma::mat rmultinomial(arma::mat A, arma::vec size, int seed = 1) {
 
 // [[Rcpp::export]]
 arma::mat rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size, int seed = 1){
-  arma::arma_rng::set_seed(seed);
   int n = size.n_elem;
   int k = mu.n_elem;
   arma::mat A = arma::ones<arma::mat>(n, k+1);

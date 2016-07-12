@@ -5,12 +5,12 @@ rnormal <- function(n, mu, sigma) {
     .Call('normalmultinomial_rnormal', PACKAGE = 'normalmultinomial', n, mu, sigma)
 }
 
-rmultinomial <- function(A, size, seed = 1L) {
-    .Call('normalmultinomial_rmultinomial', PACKAGE = 'normalmultinomial', A, size, seed)
+rmultinomial <- function(A, size) {
+    .Call('normalmultinomial_rmultinomial', PACKAGE = 'normalmultinomial', A, size)
 }
 
-rnormalmultinomial <- function(mu, sigma, size, seed = 1L) {
-    .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, size, seed)
+rnormalmultinomial <- function(mu, sigma, size) {
+    .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, size)
 }
 
 rcpp_hello <- function() {
