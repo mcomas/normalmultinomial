@@ -2,11 +2,20 @@
 #' Simulate variables following a normal distribution.
 #'
 #' @param n sample size
-#' @param mu mean parameter for the mean in a aln-normal distribution
-#' @param sigma parameter for the sigma in a aln-normal distribution
+#' @param mu mean parameter for the mean in a normal distribution
+#' @param sigma parameter for the sigma in a normal distribution
 #' @return Sample matrix
 #' @export
 rnormal <- function(n, mu, sigma) {
+  if( ! (is.vector(mu) & is.numeric(mu)) ){
+    error("'mu' must be a numeric vector")
+  }
+  if( ! (is.matrix(sigma) & is.numeric(sigma)) ){
+    error("'sigma' must be a numeric matrix")
+  }
+  if( det(sigma) <= 0 ){
+    error("'sigma' must be a positive-definite matrix")
+  }
   .Call('normalmultinomial_rnormal', PACKAGE = 'normalmultinomial', n, mu, sigma)
 }
 
@@ -32,7 +41,6 @@ rmultinomial <- function(n, size, prob) {
   if( ! (is.vector(size) & is.numeric(size)) ){
     error("'size' must be a numeric vector")
   }
-
   if(length(n) == 1){
     N = n
   }else{
@@ -47,7 +55,7 @@ rmultinomial <- function(n, size, prob) {
     A = prob / apply(prob,1,sum)
   }
   SIZE = rep_len(size, N)
-  .Call('normalmultinomial_rmultinomial', PACKAGE = 'normalmultinomial', A, SIZE)
+  .Call('normalmultinomial_rmultinomial', PACKAGE = 'normalmultinomial', A, SIZE, sample(.Random.seed, 1))
 }
 
 #' Simulate variables following a normal multinomial distribution.
@@ -58,7 +66,14 @@ rmultinomial <- function(n, size, prob) {
 #' @param sigma parameter for the sigma in a aln-normal distribution
 #' @return Sample matrix
 #' @export
-rnormalmultinomial <- function(mu, sigma, size, seed = 1L) {
-  .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, size, seed)
+rnormalmultinomial <- function(mu, sigma, size, probs = FALSE) {
+  res = .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, size, sample(.Random.seed, 1))
+  if(probs){
+    names(res) = c('probs', 'counts')
+    res[['probs']] = res[['probs']] / apply(res[['probs']], 1, sum)
+    res
+  }else{
+    res[[2]]
+  }
 }
 
