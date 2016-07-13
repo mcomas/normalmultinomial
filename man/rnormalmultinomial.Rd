@@ -4,21 +4,24 @@
 \alias{rnormalmultinomial}
 \title{Simulate variables following a normal multinomial distribution.}
 \usage{
-rnormalmultinomial(mu, sigma, size, seed = 1L)
+rnormalmultinomial(n, size, mu, sigma, probs = FALSE)
 }
 \arguments{
-\item{mu}{mean parameter for the mean in a aln-normal distribution}
-
-\item{sigma}{parameter for the sigma in a aln-normal distribution}
+\item{n}{number of observations}
 
 \item{size}{number of trials}
 
-\item{n}{number of observations}
+\item{mu}{mean parameter for the mean in the aln-normal distribution}
+
+\item{sigma}{parameter for the sigma in the aln-normal distribution}
 }
 \value{
 Sample matrix
 }
 \description{
 Simulate variables following a normal multinomial distribution.
+}
+\examples{
+rnormalmultinomial(10, 5, mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2))
 }
 

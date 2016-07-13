@@ -10,6 +10,8 @@ rmultinomial(n, size, prob)
 \item{n}{matrix with the probabilities used to generate the sample}
 
 \item{size}{number of trials en each observation}
+
+\item{prob}{probability of observations (vector) or specific to each observation (matrix)}
 }
 \value{
 multinomial sample in a matrix

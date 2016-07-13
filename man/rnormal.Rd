@@ -9,14 +9,17 @@ rnormal(n, mu, sigma)
 \arguments{
 \item{n}{sample size}
 
-\item{mu}{mean parameter for the mean in a aln-normal distribution}
+\item{mu}{mean parameter for the mean in a normal distribution}
 
-\item{sigma}{parameter for the sigma in a aln-normal distribution}
+\item{sigma}{parameter for the sigma in a normal distribution}
 }
 \value{
 Sample matrix
 }
 \description{
 Simulate variables following a normal distribution.
+}
+\examples{
+rnormal(10, mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2))
 }
 

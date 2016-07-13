@@ -3,6 +3,21 @@ PackratVersion: 0.4.7.1
 RVersion: 3.3.0
 Repos: CRAN=https://cran.rstudio.com/
 
+Package: DEoptimR
+Source: CRAN
+Version: 1.0-6
+Hash: 0d74e13bdb47749dc511cee60e1a167e
+
+Package: R6
+Source: CRAN
+Version: 2.1.2
+Hash: c515e41c73294952cbb33ee1c1be5a2d
+
+Package: RColorBrewer
+Source: CRAN
+Version: 1.1-2
+Hash: c0d56cd15034f395874c870141870c25
+
 Package: Rcpp
 Source: CRAN
 Version: 0.12.5
@@ -14,31 +29,192 @@ Version: 0.7.100.3.1
 Hash: 1a3e50e64973ee645ce7ee87c9dc47da
 Requires: Rcpp
 
+Package: bayesm
+Source: CRAN
+Version: 3.0-2
+Hash: 727fb4af6f470f08bed17097ea7c72ae
+Requires: Rcpp, RcppArmadillo
+
 Package: brew
 Source: CRAN
 Version: 1.0-6
 Hash: 931f9972deae0f205e1c78a51f33149b
+
+Package: colorspace
+Source: CRAN
+Version: 1.2-6
+Hash: 00bb12245cd975c450cc4a960884fa15
+
+Package: compositions
+Source: CRAN
+Version: 1.40-1
+Hash: 97c82316f1bc5c428967d3b2210a2169
+Requires: bayesm, energy, robustbase, tensorA
+
+Package: curl
+Source: CRAN
+Version: 0.9.7
+Hash: 8a3eaed84ed6a9a188efdeddb231c5de
+
+Package: devtools
+Source: CRAN
+Version: 1.12.0
+Hash: bbad95109ae75cbb14099281cda43af2
+Requires: digest, git2r, httr, jsonlite, memoise, rstudioapi, whisker,
+    withr
+
+Package: dichromat
+Source: CRAN
+Version: 2.0-0
+Hash: 08eed0c80510af29bb15f840ccfe37ce
 
 Package: digest
 Source: CRAN
 Version: 0.6.9
 Hash: fd55d5a024f160fc001a5ece1e27782d
 
+Package: energy
+Source: CRAN
+Version: 1.6.2
+Hash: d7b164c73360d66c6f639dd589105831
+
+Package: ggplot2
+Source: CRAN
+Version: 2.1.0
+Hash: 50e297b0191179c39c7dcae0eff72b51
+Requires: digest, gtable, plyr, reshape2, scales
+
+Package: ggtern
+Source: CRAN
+Version: 2.1.2
+Hash: 79fcd00b5999072528e22e1c181ad6be
+Requires: compositions, ggplot2, gridExtra, gtable, latex2exp, plyr,
+    proto, scales
+
+Package: git2r
+Source: CRAN
+Version: 0.15.0
+Hash: 92d5a9f3cba5e146b92a76dabbc29fbb
+
+Package: gridExtra
+Source: CRAN
+Version: 2.2.1
+Hash: 8f54b57d4b0598ed5b27e0eafe86a670
+Requires: gtable
+
+Package: gtable
+Source: CRAN
+Version: 0.2.0
+Hash: cd78381a9d3fea966ac39bd0daaf5554
+
+Package: httr
+Source: CRAN
+Version: 1.2.1
+Hash: 7de1f8f760441881804af7c1ff324340
+Requires: R6, curl, jsonlite, mime, openssl
+
+Package: jsonlite
+Source: CRAN
+Version: 1.0
+Hash: f32817e181c39ede83fdd3e699348b69
+
+Package: labeling
+Source: CRAN
+Version: 0.3
+Hash: ecf589b42cd284b03a4beb9665482d3e
+
+Package: latex2exp
+Source: CRAN
+Version: 0.4.0
+Hash: ba3213bf775f6d3dbe18ee7d1ff7b047
+Requires: magrittr, stringr
+
 Package: magrittr
 Source: CRAN
 Version: 1.5
 Hash: bdc4d48c3135e8f3b399536ddf160df4
+
+Package: memoise
+Source: CRAN
+Version: 1.0.0
+Hash: 56e7087c3559eb7ba72a9afb349bf896
+Requires: digest
+
+Package: mime
+Source: CRAN
+Version: 0.5
+Hash: 463550cf44fb6f0a2359368f42eebe62
+
+Package: mixpack
+Source: github
+Version: 0.3.5
+Hash: 9aca48b8aae7358d8c05297a8f9d40ee
+Requires: Rcpp, RcppArmadillo, mvtnorm
+GithubRepo: mixpack
+GithubUsername: mcomas
+GithubRef: master
+GithubSha1: 91b7f4ad4dce3a7da75c4297ae3a55d82c2b970e
+
+Package: munsell
+Source: CRAN
+Version: 0.4.3
+Hash: f96d896947fcaf9b6d0074002e9f4f9d
+Requires: colorspace
+
+Package: mvtnorm
+Source: CRAN
+Version: 1.0-5
+Hash: 55a3581188e15f13f5ba19c18e151ac2
+
+Package: openssl
+Source: CRAN
+Version: 0.9.4
+Hash: 5ceb5d83bba44e8e5a764ac6ad32e9fb
 
 Package: packrat
 Source: CRAN
 Version: 0.4.7-1
 Hash: 16ca16d36eb18d1d16113606ecc5c400
 
+Package: plyr
+Source: CRAN
+Version: 1.8.4
+Hash: 9710078c5fd126420ec039be1db44994
+Requires: Rcpp
+
+Package: proto
+Source: CRAN
+Version: 0.3-10
+Hash: 05d7ad64db29a39d1b02c4b9f1f4edb2
+
+Package: reshape2
+Source: CRAN
+Version: 1.4.1
+Hash: 4c341beb363831f5320f678f7f1b679d
+Requires: Rcpp, plyr, stringr
+
+Package: robustbase
+Source: CRAN
+Version: 0.92-6
+Hash: 2819fff51bd1e827b611126fc0227d46
+Requires: DEoptimR
+
 Package: roxygen2
 Source: CRAN
 Version: 5.0.1
 Hash: 5cf42c9a288a1cc760166097f8e42a92
 Requires: Rcpp, brew, digest, stringi, stringr
+
+Package: rstudioapi
+Source: CRAN
+Version: 0.6
+Hash: fd256f8bfb9a64cc35f98b0decb1a79f
+
+Package: scales
+Source: CRAN
+Version: 0.4.0
+Hash: bce90b73946711302c29ceabdb08241c
+Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
 
 Package: stringi
 Source: CRAN
@@ -50,3 +226,18 @@ Source: CRAN
 Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
+
+Package: tensorA
+Source: CRAN
+Version: 0.36
+Hash: 2faf6192c6d866485b439fc043187250
+
+Package: whisker
+Source: CRAN
+Version: 0.3-2
+Hash: 803d662762e532705c2c066a82d066e7
+
+Package: withr
+Source: CRAN
+Version: 1.0.2
+Hash: 774eb7be9087cdc24b53b74e5359cfac
