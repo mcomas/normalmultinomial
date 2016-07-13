@@ -6,113 +6,6 @@
 
 using namespace Rcpp;
 
-// mvf_norm
-double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma);
-RcppExport SEXP normalmultinomial_mvf_norm(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
-    __result = Rcpp::wrap(mvf_norm(a, mu, inv_sigma));
-    return __result;
-END_RCPP
-}
-// mvf_multinom_const
-double mvf_multinom_const(arma::vec x);
-RcppExport SEXP normalmultinomial_mvf_multinom_const(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf_multinom_const(x));
-    return __result;
-END_RCPP
-}
-// mvf_multinom_mult
-double mvf_multinom_mult(arma::vec a, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf_multinom_mult(SEXP aSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf_multinom_mult(a, x));
-    return __result;
-END_RCPP
-}
-// mvf_multinom
-double mvf_multinom(arma::vec a, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf_multinom(SEXP aSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf_multinom(a, x));
-    return __result;
-END_RCPP
-}
-// mvf
-double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf(a, mu, inv_sigma, x));
-    return __result;
-END_RCPP
-}
-// mvf_deriv
-double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf_deriv(SEXP ISEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type I(ISEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf_deriv(I, a, mu, inv_sigma, x));
-    return __result;
-END_RCPP
-}
-// mvf_deriv2
-double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
-RcppExport SEXP normalmultinomial_mvf_deriv2(SEXP ISEXP, SEXP JSEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< int >::type I(ISEXP);
-    Rcpp::traits::input_parameter< int >::type J(JSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    __result = Rcpp::wrap(mvf_deriv2(I, J, a, mu, inv_sigma, x));
-    return __result;
-END_RCPP
-}
-// logLike
-double logLike(arma::mat X, arma::mat A, arma::vec mu, arma::mat inv_sigma);
-RcppExport SEXP normalmultinomial_logLike(SEXP XSEXP, SEXP ASEXP, SEXP muSEXP, SEXP inv_sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
-    __result = Rcpp::wrap(logLike(X, A, mu, inv_sigma));
-    return __result;
-END_RCPP
-}
 // maximize_mvf
 arma::mat maximize_mvf(arma::vec mu, arma::mat inv_sigma, arma::mat X, double eps, int max_iter, double prop);
 RcppExport SEXP normalmultinomial_maximize_mvf(SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP XSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP propSEXP) {
@@ -215,6 +108,65 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// mvf
+double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf(a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
+// mvf_deriv
+double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_deriv(SEXP ISEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type I(ISEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf_deriv(I, a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
+// mvf_deriv2
+double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_deriv2(SEXP ISEXP, SEXP JSEXP, SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< int >::type I(ISEXP);
+    Rcpp::traits::input_parameter< int >::type J(JSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(mvf_deriv2(I, J, a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
+// logLike
+double logLike(arma::mat X, arma::mat A, arma::vec mu, arma::mat inv_sigma);
+RcppExport SEXP normalmultinomial_logLike(SEXP XSEXP, SEXP ASEXP, SEXP muSEXP, SEXP inv_sigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    __result = Rcpp::wrap(logLike(X, A, mu, inv_sigma));
+    return __result;
+END_RCPP
+}
 // c_rnormal
 arma::mat c_rnormal(int n, arma::vec mu, arma::mat sigma);
 RcppExport SEXP normalmultinomial_c_rnormal(SEXP nSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
@@ -252,6 +204,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type size(sizeSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     __result = Rcpp::wrap(c_rnormalmultinomial(mu, sigma, size, seed));
+    return __result;
+END_RCPP
+}
+// choose_starting
+arma::vec choose_starting(arma::vec x, arma::vec mu, arma::mat inv_sigma, double eps, int max_iter, double prop);
+RcppExport SEXP normalmultinomial_choose_starting(SEXP xSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type prop(propSEXP);
+    __result = Rcpp::wrap(choose_starting(x, mu, inv_sigma, eps, max_iter, prop));
     return __result;
 END_RCPP
 }

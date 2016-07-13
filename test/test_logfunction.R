@@ -3,7 +3,7 @@ library(mixpack)
 set.seed(1)
 N <- 10
 SIZE <- 10
-MU <- c(0,0)
+MU <- c(2,0)
 
 SIGMA.ilr <- matrix(c(1,0,
                       0,1), nrow = 2)
@@ -37,7 +37,7 @@ P.est = as.data.frame(fit[[3]])
 
 library(ggtern)
 id = LETTERS[1:N]
-add_info = function(d, v) mutate(d, v = v, id = id)
+add_info = function(d, v) transform(d, v = v, id = id)
 
 df = rbind(add_info(P, 'Prob.real'),
            add_info(P.max, 'Prob.max.'),

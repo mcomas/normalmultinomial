@@ -1,0 +1,102 @@
+---
+title: "The Normal-Multinomial distribution"
+output: pdf_document
+---
+
+The Normal-Multinomial distribution was introduced in (Billheimer _et al._, 2001) as a hierarchical statistical model combining the Aitchison's (1982, 1986) logistic normal (LN) distribution with a conditional multinomial observation model.
+
+# Definitions
+
+The normal-multinomial distribution is the distribution resulting from the compounding of the normal distribution defined in the Simplex and the multinomial distribution. The random vector $X$ generated from a normal-multinomial distribution with parameters $n$, $\mu$ and $\Sigma$ can be seen as a random vector obtained with the following steps:
+
+* First, a random vector $P$ is generated using the normal distribution defined in the Simplex with parameters $\mu$ and $\Sigma$.
+* Finally, a random vector $X$ is generated using the multinomial distribution with parameters $n$ and $P$.
+
+The probability density function of a normal-multinomial distribution can be written as
+
+\begin{equation}
+f(x; \mu, \Sigma) = \int_{a \in \mathbb{R}^{k}} MVN(a ;\mu, \Sigma) \frac{(x_{1}+\dots+x_{k+1})!}{x_{1}! \dots x_{k+1}!} (\frac{1}{\omega(a)})^{x_{k+1}}\prod_{\ell=1}^k (\frac{e^{a_\ell}}{\omega(a)})^{x_{\ell}} da,
+\label{eq:pdf}
+\end{equation}
+
+where $x =(x_{1}, \dots x_{k+1})$, $a = (a_1, \dots, a_k)$ and $\omega(a) = 1 + e^{a_1} + \dots + e^{a_k}$. Equivalently, in a more compact notation,
+
+\[
+f(x; \mu, \Sigma) = \frac{(x_{1}+\dots+x_{k+1})!}{x_{1}! \dots x_{k+1}!} \int_{a \in \mathbb{R}^{k}} MVN(a ;\mu, \Sigma)\, \omega(a)^{-x_{1} - \dots - x_{k+1}} e^{x_{1} a_1 + \dots + x_{k} a_k} da.
+\]
+
+# Estimation using the EM-algorithm
+
+Let $A$ be the random vector obtained from $P$ as the $alr(P)$ where $alr$ is the additive log-ratio transformation introduced in Aitchison (1982, 1986). The probability density function of the join distribution of $(X,A)$ is 
+
+\begin{equation}
+f(x, a; \mu, \Sigma) = \frac{(x_{1}+\dots+x_{k+1})!}{x_{1}! \dots x_{k+1}!} MVN(a ;\mu, \Sigma)\, \omega(a)^{-x_{1} - \dots - x_{k+1}} e^{x_{1} a_{1} + \dots + x_{k} a_{k}}.
+\label{eq:join}
+\end{equation}
+
+Note that from a sample $\{(x_1,a_1), \dots, (x_n,a_n)\}$ to estimate the parameters $\mu$ and $\Sigma$ by maximum likelihood we only need to optimize $MVN(a ;\mu, \Sigma)$ from Equation \ref{eq:join}:
+\[
+\hat{\mu} = \frac{1}{n} \sum_{i=1}^n a_i
+\]
+and
+\[
+\hat{\Sigma} = \frac{1}{n-1} \sum_{i=1}^n a_i^Ta_i.
+\]
+
+To estimate the parameters ($\mu$, $\Sigma$) from a sample $X = \{x_1, \dots, x_n\}$ following Equation \ref{eq:pdf}, we propose to use the classic EM-algorithm.
+
+## E-step
+
+Let $\mu^{(s)}$ and $\Sigma^{(s)}$ be the current estimates of $\mu$ and $\Sigma$. In the $E$-step we need to calculate the expected value
+
+\begin{equation}
+E_{A | (\mu^{(s)}, \Sigma^{(s)})}\left[ \sum_{i=1}^n log \left( f(x_i, a_i; \mu, \Sigma) \right) \right].
+\label{eq:estep}
+\end{equation}
+
+Let $log \left( f(x_i, a_i; \mu, \Sigma) \right)$ be divided in four parts:
+\[
+\sum_{i=1}^n log \left( f(x_i, a_i; \mu, \Sigma) \right) = \sum_{i=1}^n M_1(x_i) + M_2(a_i, \mu, \Sigma) + M_3(a_i, x_i) + M_4(a_i, x_i)
+\]
+where
+
+* $M_1(x_i) = \sum_{i=1}^n log \left( \frac{(x_{i,1}+\dots+x_{i,k+1})!}{x_{i,1}! \dots x_{i,k+1}!} \right)$,
+
+* $M_2(a_i, \mu, \Sigma) = \sum_{i=1}^n log \left(  MVN(a_i ;\mu, \Sigma) \right)$,
+
+* $M_3(a_i, x_i) = \sum_{i=1}^n log \left( \omega(a_i)^{-x_{i,1} - \dots - x_{i,k+1}} \right)$ and
+
+* $M_4(a_i, x_i) = \sum_{i=1}^n x_{i,1} a_{i,1} + \dots + x_{i,k} a_{i,k}.$
+
+The expected value of each part is given by
+\[
+\begin{array}{rcl}
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_1(x_i) \right] &=& M_1(x_i), \\ \\
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_2(a_i, \mu, \Sigma) \right] &=&  E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ -\frac{n}{2}|\Sigma| -\frac{1}{2} tr(\Sigma^{-1} \sum_{i=1}^n a_i^T a_i)  -\frac{n}{2} \mu' \Sigma^{-1}\mu +  \mu' \Sigma^{-1} \sum_{i=1}^n a_i   \right] = \\ \\
+&=& -\frac{n}{2}|\Sigma| -\frac{1}{2} tr(\Sigma^{-1} \sum_{i=1}^n E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[a_i^T a_i \right])  -\frac{n}{2} \mu' \Sigma^{-1}\mu +  \mu' \Sigma^{-1} \sum_{i=1}^n E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[a_i\right] \\ \\
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_3(a_i, x_i) \right] &=& \sum_{i=1}^n -(x_{i,1} + \dots + x_{i,k+1}) E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ log \omega(a_i) \right] \\ \\
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_4(a_i, x_i) \right] &=& \sum_{i=1}^n (x_{i,1}, \dots, x_{i,k})^T E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right].
+\end{array}
+\]
+
+Therefore, $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ \sum_{i=1}^n log \left( f(x_i, a_i; \mu, \Sigma) \right) \right]$ only depends on 
+
+* $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$, 
+* $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[a_i^T a_i \right]$ and 
+* $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ log \omega(a_i) \right]$.
+
+## M-step
+
+Once $Q(\mu, \Sigma) := E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_1(x_i) + M_2(a_i, \mu, \Sigma) + M_3(a_i, x_i) + M_4(a_i, x_i) \right]$ has been calculated in the E-step, we should find the parameters $\mu^{(s+1)}$, $\Sigma^{(s+1)}$ which maximize $Q(\mu, \Sigma)$. At this point, note that to optimize $Q(\mu, \Sigma)$ we only need to optimize expression $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_2(A, \mu, \Sigma) \right]$, the other terms are constant with respect to $\mu$ and $\Sigma$. Therefore, in the E-step it is not necessary to evaluate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ log \omega(a_i) \right]$.
+
+
+With the expected values $m_{i,1} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ and $m_{i,2} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ calculated in the E-step, we get the estimators 
+
+\[
+\begin{array}{rcl}
+\mu^{(s+1)} &=& \frac{\sum_{i=1}^n m_{i,1}}{n}, \\ \\
+\Sigma^{(s+1)} &=&  \sum_{i=1}^n \frac{m_{i,2}}{n} - \mu^{(s+1)} {\mu^{(s+1)}}^T
+\end{array}
+\]
+
+maximizing $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_2(A, \mu, \Sigma) \right]$.

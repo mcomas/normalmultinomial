@@ -1,6 +1,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
+#include "nmrandom.h"
 #include <random>
 #include <vector>
 
