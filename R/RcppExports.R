@@ -13,7 +13,3 @@ rnormalmultinomial <- function(mu, sigma, size, seed) {
     .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, size, seed)
 }
 
-rcpp_hello <- function() {
-    .Call('normalmultinomial_rcpp_hello', PACKAGE = 'normalmultinomial')
-}
-
