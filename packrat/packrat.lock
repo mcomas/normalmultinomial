@@ -3,6 +3,16 @@ PackratVersion: 0.4.7.1
 RVersion: 3.3.0
 Repos: CRAN=https://cran.rstudio.com/
 
+Package: BH
+Source: CRAN
+Version: 1.60.0-2
+Hash: be2967bcff307e561d9ba17faf03205c
+
+Package: DBI
+Source: CRAN
+Version: 0.4-1
+Hash: 6524d5c5d30ff74084ac028eeb19eb1b
+
 Package: DEoptimR
 Source: CRAN
 Version: 1.0-6
@@ -28,6 +38,11 @@ Source: CRAN
 Version: 0.7.100.3.1
 Hash: 1a3e50e64973ee645ce7ee87c9dc47da
 Requires: Rcpp
+
+Package: assertthat
+Source: CRAN
+Version: 0.1
+Hash: 0afb92b59b02593c70ff8046700ba9d3
 
 Package: bayesm
 Source: CRAN
@@ -73,10 +88,25 @@ Source: CRAN
 Version: 0.6.9
 Hash: fd55d5a024f160fc001a5ece1e27782d
 
+Package: dplyr
+Source: CRAN
+Version: 0.5.0
+Hash: bdfac738899f1f65b932f4c6f10c2cff
+Requires: BH, DBI, R6, Rcpp, assertthat, lazyeval, magrittr, tibble
+
 Package: energy
 Source: CRAN
 Version: 1.6.2
 Hash: d7b164c73360d66c6f639dd589105831
+
+Package: evaluate
+Source: CRAN
+Version: 0.9
+Requires: stringr
+
+Package: formatR
+Source: CRAN
+Version: 1.4
 
 Package: ggplot2
 Source: CRAN
@@ -107,6 +137,10 @@ Source: CRAN
 Version: 0.2.0
 Hash: cd78381a9d3fea966ac39bd0daaf5554
 
+Package: highr
+Source: CRAN
+Version: 0.6
+
 Package: httr
 Source: CRAN
 Version: 1.2.1
@@ -117,6 +151,11 @@ Package: jsonlite
 Source: CRAN
 Version: 1.0
 Hash: f32817e181c39ede83fdd3e699348b69
+
+Package: knitr
+Source: CRAN
+Version: 1.13
+Requires: digest, formatR, highr, yaml, markdown, stringr, evaluate
 
 Package: labeling
 Source: CRAN
@@ -129,10 +168,20 @@ Version: 0.4.0
 Hash: ba3213bf775f6d3dbe18ee7d1ff7b047
 Requires: magrittr, stringr
 
+Package: lazyeval
+Source: CRAN
+Version: 0.2.0
+Hash: 3d6e7608e65bbf5cb170dab1e3c9ed8b
+
 Package: magrittr
 Source: CRAN
 Version: 1.5
 Hash: bdc4d48c3135e8f3b399536ddf160df4
+
+Package: markdown
+Source: CRAN
+Version: 0.7.7
+Requires: mime
 
 Package: memoise
 Source: CRAN
@@ -232,6 +281,12 @@ Source: CRAN
 Version: 0.36
 Hash: 2faf6192c6d866485b439fc043187250
 
+Package: tibble
+Source: CRAN
+Version: 1.1
+Hash: 2adf5d30afaa827aafc9e65490779025
+Requires: Rcpp, assertthat, lazyeval
+
 Package: whisker
 Source: CRAN
 Version: 0.3-2
@@ -241,3 +296,7 @@ Package: withr
 Source: CRAN
 Version: 1.0.2
 Hash: 774eb7be9087cdc24b53b74e5359cfac
+
+Package: yaml
+Source: CRAN
+Version: 2.1.13

@@ -18,7 +18,7 @@ rnormal <- function(n, mu, sigma) {
   if( det(sigma) <= 0 ){
     error("'sigma' must be a positive-definite matrix")
   }
-  .Call('normalmultinomial_rnormal', PACKAGE = 'normalmultinomial', n, mu, sigma)
+  .Call('normalmultinomial_c_rnormal', PACKAGE = 'normalmultinomial', n, mu, sigma)
 }
 
 #' Simulate variables following a multinomial distribution.
@@ -57,7 +57,7 @@ rmultinomial <- function(n, size, prob) {
     A = prob / apply(prob,1,sum)
   }
   SIZE = rep_len(size, N)
-  .Call('normalmultinomial_rmultinomial', PACKAGE = 'normalmultinomial', A, SIZE, sample(.Random.seed, 1))
+  .Call('normalmultinomial_c_rmultinomial', PACKAGE = 'normalmultinomial', A, SIZE, sample(.Random.seed, 1))
 }
 
 #' Simulate variables following a normal multinomial distribution.
@@ -92,7 +92,7 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
     error("'sigma' must be a positive-definite matrix")
   }
   SIZE = rep_len(size, N)
-  res = .Call('normalmultinomial_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, SIZE, sample(.Random.seed, 1))
+  res = .Call('normalmultinomial_c_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, SIZE, sample(.Random.seed, 1))
   if(probs){
     names(res) = c('probs', 'counts')
     res[['probs']] = res[['probs']] / apply(res[['probs']], 1, sum)

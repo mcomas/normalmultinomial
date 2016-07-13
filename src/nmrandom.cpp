@@ -12,14 +12,14 @@ using namespace Rcpp;
 const double log2pi = std::log(2.0 * M_PI);
 
 // [[Rcpp::export]]
-arma::mat rnormal(int n, arma::vec mu, arma::mat sigma) {
+arma::mat c_rnormal(int n, arma::vec mu, arma::mat sigma) {
   int ncols = sigma.n_cols;
   arma::mat Y = arma::randn(n, ncols);
   return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
 }
 
 // [[Rcpp::export]]
-arma::mat rmultinomial(arma::mat A, arma::vec size, int seed = 1) {
+arma::mat c_rmultinomial(arma::mat A, arma::vec size, int seed = 1) {
   int k = A.n_cols;
   int n = A.n_rows;
 
@@ -37,10 +37,10 @@ arma::mat rmultinomial(arma::mat A, arma::vec size, int seed = 1) {
 }
 
 // [[Rcpp::export]]
-List rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size, int seed){
+List c_rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size, int seed){
   int n = size.n_elem;
   int k = mu.n_elem;
   arma::mat A = arma::ones<arma::mat>(n, k+1);
-  A(arma::span::all, arma::span(0,k-1)) = exp(rnormal(n, mu, sigma));
-  return(List::create(A, rmultinomial(A, size, seed)));
+  A(arma::span::all, arma::span(0,k-1)) = exp(c_rnormal(n, mu, sigma));
+  return(List::create(A, c_rmultinomial(A, size, seed)));
 }
