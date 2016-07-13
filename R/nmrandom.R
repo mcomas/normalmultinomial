@@ -74,9 +74,6 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
   if(! (is.vector(n) & is.numeric(n)) ){
     error("'n' must be numeric")
   }
-  if(! (is.numeric(prob) & (is.vector(prob) | is.matrix(prob) )) ){
-    error("'prob' must be numeric vector or a numeric matrix")
-  }
   if( ! (is.vector(size) & is.numeric(size)) ){
     error("'size' must be a numeric vector")
   }
