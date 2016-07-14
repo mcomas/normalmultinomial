@@ -287,6 +287,12 @@ Version: 1.1
 Hash: 2adf5d30afaa827aafc9e65490779025
 Requires: Rcpp, assertthat, lazyeval
 
+Package: tidyr
+Source: CRAN
+Version: 0.5.1
+Hash: c107f349e6a400a168f6862d78a69a03
+Requires: Rcpp, dplyr, lazyeval, magrittr, stringi, tibble
+
 Package: whisker
 Source: CRAN
 Version: 0.3-2

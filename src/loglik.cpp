@@ -81,6 +81,7 @@ double mvf_multinom(arma::vec a, arma::vec x){
   return(mult);
 }
 
+//' @export
 // [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();

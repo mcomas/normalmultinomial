@@ -41,7 +41,6 @@ arma::mat maximize_mvf(arma::vec mu, arma::mat inv_sigma, arma::mat X,
             A(i,j) = log(X(i,j)/prop);
           }
         }
-
       }
     }
   }

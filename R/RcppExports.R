@@ -84,6 +84,7 @@ normalmultinomial_fitting <- function(X, nsim = 1000L, niter = 20L, prop = 0.66,
     .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version)
 }
 
+#' @export
 mvf <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }
@@ -115,5 +116,25 @@ c_rnormalmultinomial <- function(mu, sigma, size, seed) {
 #' @export
 choose_starting <- function(x, mu, inv_sigma, eps = 1e-8, max_iter = 100L, prop = 0.66) {
     .Call('normalmultinomial_choose_starting', PACKAGE = 'normalmultinomial', x, mu, inv_sigma, eps, max_iter, prop)
+}
+
+#' @export
+vec_mvf_multinom_mult <- function(A, x) {
+    .Call('normalmultinomial_vec_mvf_multinom_mult', PACKAGE = 'normalmultinomial', A, x)
+}
+
+#' @export
+expectedA1 <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedA1', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}
+
+#' @export
+vec_mvf_norm <- function(A, mu, inv_sigma) {
+    .Call('normalmultinomial_vec_mvf_norm', PACKAGE = 'normalmultinomial', A, mu, inv_sigma)
+}
+
+#' @export
+expectedA2 <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedA2', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
 }
 
