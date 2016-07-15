@@ -64,6 +64,20 @@ arma::vec choose_starting(arma::vec x, arma::vec mu, arma::mat inv_sigma,
 
 //' @export
 // [[Rcpp::export]]
+arma::mat hessian(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
+  int k = x.size() - 1;
+  arma::mat deriv2 = arma::mat(k,k);
+  for(int I=0; I<k; I++){
+    for(int J=0; J<k; J++){
+      deriv2(I,J) = mvf_deriv2(I, J, a, mu, inv_sigma, x);
+    }
+  }
+  return deriv2;
+}
+
+
+//' @export
+// [[Rcpp::export]]
 arma::vec vec_mvf_multinom_mult(arma::mat A, arma::vec x){
   int k = A.n_cols;
   int n = A.n_rows;
@@ -168,21 +182,21 @@ Rcpp::List expectedA3(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100
   arma::mat Ap = arma::mat(nsim2, k);
 
   arma::mat inv_sigma = inv_sympd(sigma);
-  arma::vec mu0 = choose_starting(x, mu, inv_sigma);
+  //arma::vec mu0 = choose_starting(x, mu, inv_sigma);
 
   arma::mat H = arma::mat(k,k);
   for(int i=0;i<k;i++){
     for(int j=0;j<k;j++){
-      H(i,j) = mvf_deriv2(i, j, mu0, mu, inv_sigma, x);
+      H(i,j) = mvf_deriv2(i, j, mu, mu, inv_sigma, x);
     }
   }
   arma::mat Hinv = inv_sympd(-H);
   //Rcout << -H << std::endl;
 
-  Ap = arma::repmat(mu0.t(), nsim2, 1) + Z * arma::chol(Hinv);
+  Ap = arma::repmat(mu.t(), nsim2, 1) + Z * arma::chol(Hinv);
 
   arma::vec lik = exp( mvf_multinom_const(x) + vec_mvf_multinom_mult(Ap, x) ) %
-  vec_mvf_norm(Ap, mu, inv_sigma)  / vec_mvf_norm(Ap, mu0, -H);
+  vec_mvf_norm(Ap, mu, inv_sigma)  / vec_mvf_norm(Ap, mu, -H);
   arma::vec lik_st = lik / mean(lik);
 
   arma::vec expected_m1 = arma::vec(k);

@@ -1,9 +1,8 @@
-set.seed(1)
 library(mixpack)
 
 N = 100
 MU = c(2,0)
-SIZE = 10
+SIZE = rpois(N, lambda = 10)
 SIGMA <- matrix(c(2,1,
                   1,2), nrow = 2)
 
@@ -28,3 +27,8 @@ ggtern() +
   theme_bw() + theme(legend.position = 'none') +
   facet_wrap(~src, ncol=1)
 
+df.ilr = bind_cols(ilr_coordinates(df %>% select(V1,V2,V3)),
+                   df %>% select(src))
+ggplot() +
+  geom_point(data = df.ilr, aes(x = coord.1, y = coord.2, col = src), size = 2) +
+  ggplot2::theme_bw()

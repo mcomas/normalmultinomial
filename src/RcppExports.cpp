@@ -223,6 +223,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// hessian
+arma::mat hessian(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
+RcppExport SEXP normalmultinomial_hessian(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type inv_sigma(inv_sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    __result = Rcpp::wrap(hessian(a, mu, inv_sigma, x));
+    return __result;
+END_RCPP
+}
 // vec_mvf_multinom_mult
 arma::vec vec_mvf_multinom_mult(arma::mat A, arma::vec x);
 RcppExport SEXP normalmultinomial_vec_mvf_multinom_mult(SEXP ASEXP, SEXP xSEXP) {

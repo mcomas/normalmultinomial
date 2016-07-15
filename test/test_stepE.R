@@ -4,7 +4,7 @@ library(tidyr)
 
 set.seed(1)
 MU = 1
-SIGMA = matrix(10)
+SIGMA = matrix(50)
 x = c(10,0)
 
 df = data_frame(
@@ -12,7 +12,11 @@ df = data_frame(
   f = exp(sapply(a, mvf, mu = MU, inv_sigma = solve(SIGMA), x = x))) %>%
   mutate(f = f / (sum(f)*(a[2]-a[1])))
 plot(df, type='l')
-abline(v = maximize_mvf(mu = MU, inv_sigma = solve(SIGMA), X = matrix(x, nrow=1)), col='red')
+#abline(v = maximize_mvf(mu = MU, inv_sigma = solve(SIGMA), X = matrix(x, nrow=1)), col='red')
+m = maximize_mvf(mu = MU, inv_sigma = solve(SIGMA), X = matrix(x, nrow=1))
+v = 1/(-hessian(m, mu = MU, inv_sigma = solve(SIGMA), x = x))
+df$fnorm = sapply(df$a, function(a) dnorm(a, mean = m, sd = sqrt(v)))
+points(df[,c('a','fnorm')], type = 'l', col = 'red')
 abline(v = expectedA1(x = x, mu = MU, sigma = SIGMA, nsim=1000)[[1]], col = 'blue')
 abline(v = expectedA2(x = x, mu = MU, sigma = SIGMA, nsim=1000)[[1]], col = 'green')
 abline(v = expectedA3(x = x, mu = MU, sigma = SIGMA, nsim=1000)[[1]], col = 'brown')

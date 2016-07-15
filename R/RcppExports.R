@@ -119,6 +119,11 @@ choose_starting <- function(x, mu, inv_sigma, eps = 1e-8, max_iter = 100L, prop 
 }
 
 #' @export
+hessian <- function(a, mu, inv_sigma, x) {
+    .Call('normalmultinomial_hessian', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
+}
+
+#' @export
 vec_mvf_multinom_mult <- function(A, x) {
     .Call('normalmultinomial_vec_mvf_multinom_mult', PACKAGE = 'normalmultinomial', A, x)
 }
