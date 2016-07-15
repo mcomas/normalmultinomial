@@ -2,6 +2,7 @@
 
 #include <RcppArmadillo.h>
 #include "nmrandom.h"
+#include "stepE.h"
 #include "loglik.h"
 #include <random>
 #include <vector>
@@ -328,7 +329,7 @@ List E_step4(arma::mat X, arma::mat mu, arma::mat sigma, int nsim = 1000){
 //' @param prop first 0 imputation
 //' @export
 // [[Rcpp::export]]
-List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20,
+List normalmultinomial_fitting(arma::mat X, int nsim = 100, int niter = 20,
                                double prop = 0.66, int version = 0){
   int n = X.n_rows;
   int K = X.n_cols;
@@ -357,12 +358,14 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 1000, int niter = 20,
   }
   arma::mat mu = mean(A);
   arma::mat sigma = cov(A);
-  List list;
-  //if(version == 2){
-  //  list =EM_step2(X, mu, sigma, nsim, niter);
-  //}else{
-    list = EM_step(X, mu, sigma, nsim, niter);
-  //}
+  List fit;
+  for(int s = 0 ; s < niter; s++){
+    fit = stepEM(X, mu.t(), sigma, nsim);
+    arma::mat mu_next = fit[0];
+    arma::mat sigma_next = fit[1];
+    mu = mu_next.t();
+    sigma_next = sigma_next;
+  }
 
-  return list;
+  return fit;
 }

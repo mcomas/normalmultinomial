@@ -80,7 +80,7 @@ E_step4 <- function(X, mu, sigma, nsim = 1000L) {
 #' @param niter number of iterations for the EM-algorithm
 #' @param prop first 0 imputation
 #' @export
-normalmultinomial_fitting <- function(X, nsim = 1000L, niter = 20L, prop = 0.66, version = 0L) {
+normalmultinomial_fitting <- function(X, nsim = 100L, niter = 20L, prop = 0.66, version = 0L) {
     .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version)
 }
 

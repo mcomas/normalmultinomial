@@ -10,13 +10,13 @@
 #' @export
 rnormal <- function(n, mu, sigma) {
   if( ! (is.vector(mu) & is.numeric(mu)) ){
-    error("'mu' must be a numeric vector")
+    stop("'mu' must be a numeric vector")
   }
   if( ! (is.matrix(sigma) & is.numeric(sigma)) ){
-    error("'sigma' must be a numeric matrix")
+    stop("'sigma' must be a numeric matrix")
   }
   if( det(sigma) <= 0 ){
-    error("'sigma' must be a positive-definite matrix")
+    stop("'sigma' must be a positive-definite matrix")
   }
   .Call('normalmultinomial_c_rnormal', PACKAGE = 'normalmultinomial', n, mu, sigma)
 }
@@ -35,13 +35,13 @@ rmultinomial <- function(n, size, prob) {
     prob = as.matrix(prob)
   }
   if(! (is.vector(n) & is.numeric(n)) ){
-    error("'n' must be numeric")
+    stop("'n' must be numeric")
   }
   if(! (is.numeric(prob) & (is.vector(prob) | is.matrix(prob) )) ){
-    error("'prob' must be numeric vector or a numeric matrix")
+    stop("'prob' must be numeric vector or a numeric matrix")
   }
   if( ! (is.vector(size) & is.numeric(size)) ){
-    error("'size' must be a numeric vector")
+    stop("'size' must be a numeric vector")
   }
   if(length(n) == 1){
     N = n
@@ -72,10 +72,10 @@ rmultinomial <- function(n, size, prob) {
 #' @export
 rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
   if(! (is.vector(n) & is.numeric(n)) ){
-    error("'n' must be numeric")
+    stop("'n' must be numeric")
   }
   if( ! (is.vector(size) & is.numeric(size)) ){
-    error("'size' must be a numeric vector")
+    stop("'size' must be a numeric vector")
   }
   if(length(n) == 1){
     N = n
@@ -83,13 +83,13 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
     N = length(n)
   }
   if( ! (is.vector(mu) & is.numeric(mu)) ){
-    error("'mu' must be a numeric vector")
+    stop("'mu' must be a numeric vector")
   }
   if( ! (is.matrix(sigma) & is.numeric(sigma)) ){
-    error("'sigma' must be a numeric matrix")
+    stop("'sigma' must be a numeric matrix")
   }
   if( det(sigma) <= 0 ){
-    error("'sigma' must be a positive-definite matrix")
+    stop("'sigma' must be a positive-definite matrix")
   }
   SIZE = rep_len(size, N)
   res = .Call('normalmultinomial_c_rnormalmultinomial', PACKAGE = 'normalmultinomial', mu, sigma, SIZE, sample(.Random.seed, 1))
