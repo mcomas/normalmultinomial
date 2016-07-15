@@ -1,6 +1,8 @@
 ---
 title: "The Normal-Multinomial distribution"
-output: pdf_document
+output: 
+  pdf_document: 
+    keep_tex: yes
 ---
 
 The Normal-Multinomial distribution was introduced in (Billheimer _et al._, 2001) as a hierarchical statistical model combining the Aitchison's (1982, 1986) logistic normal (LN) distribution with a conditional multinomial observation model.
@@ -90,13 +92,93 @@ Therefore, $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ \sum_{i=1}^n log \left( f(x_i,
 Once $Q(\mu, \Sigma) := E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_1(x_i) + M_2(a_i, \mu, \Sigma) + M_3(a_i, x_i) + M_4(a_i, x_i) \right]$ has been calculated in the E-step, we should find the parameters $\mu^{(s+1)}$, $\Sigma^{(s+1)}$ which maximize $Q(\mu, \Sigma)$. At this point, note that to optimize $Q(\mu, \Sigma)$ we only need to optimize expression $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_2(A, \mu, \Sigma) \right]$, the other terms are constant with respect to $\mu$ and $\Sigma$. Therefore, in the E-step it is not necessary to evaluate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ log \omega(a_i) \right]$.
 
 
-With the expected values $m_{i,1} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ and $m_{i,2} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ calculated in the E-step, we get the estimators 
+With the expected values $m_{1} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ and $m_{2} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ calculated in the E-step, we get the estimators 
 
 \[
 \begin{array}{rcl}
-\mu^{(s+1)} &=& \frac{\sum_{i=1}^n m_{i,1}}{n}, \\ \\
-\Sigma^{(s+1)} &=&  \sum_{i=1}^n \frac{m_{i,2}}{n} - \mu^{(s+1)} {\mu^{(s+1)}}^T
+\mu^{(s+1)} &=& \frac{\sum_{i=1}^n m_{1}}{n}, \\ \\
+\Sigma^{(s+1)} &=&  \sum_{i=1}^n \frac{m_{2}}{n} - \mu^{(s+1)} {\mu^{(s+1)}}^T
 \end{array}
 \]
 
 maximizing $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ M_2(A, \mu, \Sigma) \right]$.
+
+# Expected value
+
+In the E-step we need to calculate the expected values
+
+* $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ i 
+* $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$.
+
+We approximate these expected value using Montecarlo by generating random variables
+\[
+(A | X=x; \mu, \Sigma)
+\]
+with density function
+\[
+f(a; x, \mu, \Sigma) = \frac{(x_{1}+\dots+x_{k+1})!}{x_{1}! \dots x_{k+1}!} MVN(a ;\mu, \Sigma) \omega(a)^{-x_{1} - \dots - x_{k+1}} e^{x_{1} a_{1} + \dots + x_{k} a_{k}}.
+\]
+
+
+
+Finding the mode of distribution $f(a; x, \mu, \Sigma)$ can be done using the classical Newton-Raphson algorithm. To this end we calculate the first and second derivative of $f$ with respect $a$. Instead of calculating the derivatives of $f$ we calculate the derivatives of $l(a) = log(f(a; x, \mu, \Sigma))$ without constant terms
+
+\[
+l(a) = -\frac{1}{2} (a-\mu)^{T} \Sigma^{-1} (a-\mu) + x_{k+1} log(\frac{1}{\omega(a)}) + \sum_{\ell = 1}^k x_\ell log(\frac{e^{a_\ell}}{\omega(a)}) 
+\]
+
+
+
+### First derivatives
+
+\[
+\frac{\partial l(a)}{\partial a_i} = - \sum_{\ell=1}^k (a_i-\mu_i) \Sigma^{-1}_{(i,\ell)} 
++ x_i \; \frac{\omega(a)-e^{a_i}}{\omega(a)} 
++ \sum_{\ell=1, \ell \neq i}^{k+1} x_{\ell}\; \frac{-e^{a_i}}{\omega(a)} 
+\]
+
+### Second derivative
+
+\[
+\frac{\partial^2 l(a)}{\partial a_i^2} = -\Sigma^{-1}_{(i,i)} - \sum_{\ell=1}^{k+1} x_\ell \frac{e^{a_i} (\omega(a) - e^{a_i})}{\omega(a)^2}
+\]
+
+\[
+\frac{\partial^2 l(a)}{\partial a_i \partial a_j} = -\Sigma^{-1}_{(i,j)} + \sum_{\ell=1}^{k+1} x_\ell \frac{e^{a_i+a_j}}{\omega(a)^2}
+\]
+
+
+# Montecarlo 
+
+## Estimation of $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ and $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$
+
+A first approach is to approximate the expected value of $m_{i,1} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ and $m_{i,2} = E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ using a Montecarlo approach.
+
+#### $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ estimation
+
+To calculate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right]$ we need to calculate
+
+\[
+\begin{array}{rcl}
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i \right] &=& \int_{a_i \in \mathbb{R}^k} a_i f(a_i, x_i; \mu^{(s)}, \Sigma^{(s)}) da_i \\
+&=& \int_{a_i \in \mathbb{R}^k} a_i  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i \\
+&=& \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} \int_{a_i \in \mathbb{R}^k} a_i \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}}   e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}),
+\end{array}
+\]
+
+#### $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ estimation
+
+To calculate $E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right]$ we need to calculate
+
+\[
+\begin{array}{rcl}
+E_{A/(\mu^{(s)}, \Sigma^{(s)})}\left[ a_i a_i^T \right] &=& \int_{a_i \in \mathbb{R}^k} a_i a_i^T f(a_i, x_i; \mu^{(s)}, \Sigma^{(s)}) da_i \\
+&=& \int_{a_i \in \mathbb{R}^k} a_i a_i^T  \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} MVN(a_i ;\mu^{(s)}, \Sigma^{(s)}) \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} d a_i\\
+&=& \frac{(x_{i,1}+\dots+x_{i, k+1})!}{x_{i,1}! \dots x_{i, k+1}!} \int_{a_i \in \mathbb{R}^k} a_i a_i^T \omega(a_i)^{-x_{i,1} - \dots - x_{i, k+1}} e^{x_{i,1} a_{i,1} + \dots + x_{i,k} a_{ik}} dMVN(a_i ;\mu^{(s)}, \Sigma^{(s)}),
+\end{array}
+\]
+
+# Experiments
+
+Billheimer _et al._, 2001 proposed to estimate the expected values $m_{1}$ and $m_{2}$ using a Metropolis-Hastings algorithm.
+
