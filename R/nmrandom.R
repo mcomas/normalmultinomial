@@ -66,6 +66,7 @@ rmultinomial <- function(n, size, prob) {
 #' @param size number of trials
 #' @param mu mean parameter for the mean in the aln-normal distribution
 #' @param sigma parameter for the sigma in the aln-normal distribution
+#' @param probs return the multinomial probability used to generated the sample
 #' @return Sample matrix
 #' @examples
 #' rnormalmultinomial(10, 5, mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2))

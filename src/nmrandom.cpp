@@ -1,16 +1,14 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
-#include "nmrandom.h"
 #include <random>
 #include <vector>
+#include "nmrandom.h"
 
 // Enable C++11 via this plugin (Rcpp 0.10.3 or later)
 // [[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
-
-const double log2pi = std::log(2.0 * M_PI);
 
 // [[Rcpp::export]]
 arma::mat c_rnormal(int n, arma::vec mu, arma::mat sigma) {

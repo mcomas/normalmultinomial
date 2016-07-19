@@ -14,6 +14,8 @@ rnormalmultinomial(n, size, mu, sigma, probs = FALSE)
 \item{mu}{mean parameter for the mean in the aln-normal distribution}
 
 \item{sigma}{parameter for the sigma in the aln-normal distribution}
+
+\item{probs}{return the multinomial probability used to generated the sample}
 }
 \value{
 Sample matrix
