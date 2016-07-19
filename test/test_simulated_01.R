@@ -11,7 +11,8 @@ X = sample$counts
 P = sample$probs
 
 
-fit = normalmultinomial_fitting(X)
+fit = normalmultinomial_fitting(X, version = 0)
+fit1 = normalmultinomial_fitting(X, version = 1)
 A = stepE(X, fit[[1]], fit[[2]])
 P.est = cbind(exp(A), 1) / apply(cbind(exp(A),1), 1, sum)
 

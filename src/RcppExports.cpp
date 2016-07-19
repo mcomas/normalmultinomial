@@ -304,6 +304,21 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// expectedA4
+Rcpp::List expectedA4(arma::vec a, arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_expectedA4(SEXP aSEXP, SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    __result = Rcpp::wrap(expectedA4(a, x, mu, sigma, nsim));
+    return __result;
+END_RCPP
+}
 // stepE
 arma::mat stepE(arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
 RcppExport SEXP normalmultinomial_stepE(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
@@ -318,9 +333,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// stepEM
-Rcpp::List stepEM(arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
-RcppExport SEXP normalmultinomial_stepEM(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+// stepEM1
+Rcpp::List stepEM1(arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_stepEM1(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -328,7 +343,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
-    __result = Rcpp::wrap(stepEM(X, mu, sigma, nsim));
+    __result = Rcpp::wrap(stepEM1(X, mu, sigma, nsim));
+    return __result;
+END_RCPP
+}
+// stepEM2
+Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_stepEM2(SEXP ASEXP, SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    __result = Rcpp::wrap(stepEM2(A, X, mu, sigma, nsim));
     return __result;
 END_RCPP
 }

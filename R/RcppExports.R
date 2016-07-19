@@ -149,12 +149,22 @@ expectedA3 <- function(x, mu, sigma, nsim = 100L) {
 }
 
 #' @export
+expectedA4 <- function(a, x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedA4', PACKAGE = 'normalmultinomial', a, x, mu, sigma, nsim)
+}
+
+#' @export
 stepE <- function(X, mu, sigma, nsim = 100L) {
     .Call('normalmultinomial_stepE', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
 }
 
 #' @export
-stepEM <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_stepEM', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
+stepEM1 <- function(X, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_stepEM1', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
+}
+
+#' @export
+stepEM2 <- function(A, X, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_stepEM2', PACKAGE = 'normalmultinomial', A, X, mu, sigma, nsim)
 }
 

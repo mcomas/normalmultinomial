@@ -359,12 +359,23 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 100, int niter = 20,
   arma::mat mu = mean(A);
   arma::mat sigma = cov(A);
   List fit;
-  for(int s = 0 ; s < niter; s++){
-    fit = stepEM(X, mu.t(), sigma, nsim);
-    arma::mat mu_next = fit[0];
-    arma::mat sigma_next = fit[1];
-    mu = mu_next.t();
-    sigma_next = sigma_next;
+  if(version == 0){
+    for(int s = 0 ; s < niter; s++){
+      fit = stepEM1(X, mu.t(), sigma, nsim);
+      arma::mat mu_next = fit[0];
+      arma::mat sigma_next = fit[1];
+      mu = mu_next.t();
+      sigma_next = sigma_next;
+    }
+  }
+  if(version == 1){
+    for(int s = 0 ; s < niter; s++){
+      fit = stepEM2(A, X, mu.t(), sigma, nsim);
+      arma::mat mu_next = fit[0];
+      arma::mat sigma_next = fit[1];
+      mu = mu_next.t();
+      sigma_next = sigma_next;
+    }
   }
 
   return fit;
