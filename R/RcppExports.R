@@ -39,3 +39,8 @@ stepEM2 <- function(A, X, mu, sigma, nsim = 100L) {
     .Call('normalmultinomial_stepEM2', PACKAGE = 'normalmultinomial', A, X, mu, sigma, nsim)
 }
 
+#' @export
+dnormalmultinomial <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_dnormalmultinomial', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}
+

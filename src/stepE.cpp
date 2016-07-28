@@ -193,3 +193,25 @@ Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int 
   sigma_next = sigma_next / n - mu_next * mu_next.t();
   return Rcpp::List::create(mu_next, sigma_next);
 }
+
+//' @export
+// [[Rcpp::export]]
+double dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
+  int K = x.size();
+  int k = K - 1;
+  int nsim2 = 2 * nsim;
+
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap = arma::mat(nsim2, k);
+
+  arma::mat inv_sigma = inv_sympd(sigma);
+  arma::vec mu0 = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
+
+  Ap = arma::repmat(mu0.t(), nsim2, 1) + Z * arma::chol(sigma);
+
+  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
+  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu0, inv_sigma);
+  return mean(lik);
+}
