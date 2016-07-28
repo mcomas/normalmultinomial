@@ -194,9 +194,8 @@ Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int 
   return Rcpp::List::create(mu_next, sigma_next);
 }
 
-//' @export
 // [[Rcpp::export]]
-double dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
+double c_dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
   int K = x.size();
   int k = K - 1;
   int nsim2 = 2 * nsim;

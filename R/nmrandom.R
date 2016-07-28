@@ -103,3 +103,29 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
   }
 }
 
+
+#' Probability of a given count
+#'
+#' @param x counts
+#' @param mu mean parameter for the mean in the aln-normal distribution
+#' @param sigma parameter for the sigma in the aln-normal distribution
+#' @param nsim simulations done to calculate the integral
+#' @return probability
+#' @examples
+#' dnormalmultinomial(c(0,0), mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2), nsim = 1000)
+#' @export
+dnormalmultinomial <- function(x, mu, sigma, nsim = 100) {
+  if( ! (is.vector(x) & is.numeric(x)) ){
+    stop("'x' must be a numeric vector")
+  }
+  if( ! (is.vector(mu) & is.numeric(mu)) ){
+    stop("'mu' must be a numeric vector")
+  }
+  if( ! (is.matrix(sigma) & is.numeric(sigma)) ){
+    stop("'sigma' must be a numeric matrix")
+  }
+  if( det(sigma) <= 0 ){
+    stop("'sigma' must be a positive-definite matrix")
+  }
+  .Call('normalmultinomial_c_dnormalmultinomial', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}

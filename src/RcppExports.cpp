@@ -104,9 +104,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// dnormalmultinomial
-double dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
-RcppExport SEXP normalmultinomial_dnormalmultinomial(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+// c_dnormalmultinomial
+double c_dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_c_dnormalmultinomial(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -114,7 +114,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
-    __result = Rcpp::wrap(dnormalmultinomial(x, mu, sigma, nsim));
+    __result = Rcpp::wrap(c_dnormalmultinomial(x, mu, sigma, nsim));
     return __result;
 END_RCPP
 }
