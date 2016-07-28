@@ -22,6 +22,6 @@ probability
 Probability of a given count
 }
 \examples{
-rnormalmultinomial(10, 5, mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2))
+dnormalmultinomial(c(0,0), mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2), nsim = 1000)
 }
 

@@ -10,6 +10,7 @@ using namespace Rcpp;
 
 const double log2pi = std::log(2.0 * M_PI);
 
+
 double mvf_norm(arma::vec a, arma::vec mu, arma::mat inv_sigma){
   int k = a.size();
 
@@ -113,6 +114,8 @@ double mvf_multinom(arma::vec a, arma::vec x){
   return(mult);
 }
 
+//' @export
+// [[Rcpp::export]]
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   int K = k +1;
@@ -147,6 +150,8 @@ double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   return(norm + mult);
 }
 
+//' @export
+// [[Rcpp::export]]
 double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
   arma::mat log_norm =  -(a-mu).t() * inv_sigma(arma::span::all, I);
@@ -159,6 +164,8 @@ double mvf_deriv(int I, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::ve
   return log_norm(0) + mult;
 }
 
+//' @export
+// [[Rcpp::export]]
 double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = a.size();
 
@@ -172,12 +179,17 @@ double mvf_deriv2(int I, int J, arma::vec a, arma::vec mu, arma::mat inv_sigma, 
   }
   return mult;
 }
+
+//' @export
+// [[Rcpp::export]]
 double logLike(arma::mat X, arma::mat A, arma::vec mu, arma::mat inv_sigma) {
   double loglik  = 0;
   for(int l = 0; l< A.n_rows; l++) loglik += mvf(A.row(l).t(), mu.row(0).t(), inv_sigma, X.row(l).t());
   return(loglik);
 }
 
+//' @export
+// [[Rcpp::export]]
 arma::mat hessian(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   int k = x.size() - 1;
   arma::mat deriv2 = arma::mat(k,k);
@@ -189,6 +201,8 @@ arma::mat hessian(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
   return deriv2;
 }
 
+//' @export
+// [[Rcpp::export]]
 arma::vec mvf_maximum(arma::vec x, arma::vec mu, arma::mat inv_sigma, double eps, int max_iter, double prop) {
   int k = x.size() - 1;
   arma::vec a = arma::vec(k);
