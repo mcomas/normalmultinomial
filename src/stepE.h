@@ -10,3 +10,5 @@ Rcpp::List expectedA4(arma::vec a, arma::vec x, arma::vec mu, arma::mat sigma, i
 Rcpp::List stepEM1(arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
 
 Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int nsim);
+
+double dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
