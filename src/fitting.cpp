@@ -4,6 +4,7 @@
 #include "nmrandom.h"
 #include "stepE.h"
 #include "loglik.h"
+#include "coda.h"
 #include <random>
 #include <vector>
 
@@ -69,3 +70,4 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 100, int niter = 20,
 
   return fit;
 }
+
