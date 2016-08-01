@@ -95,7 +95,7 @@ List df_x_3(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
   arma::mat Z = join_cols(Z1, Z2);
   arma::mat Ap0 = arma::mat(nsim2, k);
 
-  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(3));
+  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(K));
   arma::mat inv_sigma = inv_sympd(sigma);
 
   Ap0 = Z * arma::chol(sigma);
@@ -190,64 +190,51 @@ List expected2(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.001
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
-  arma::vec converged = arma::zeros(n);
+  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(K));
 
-  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(3));
+  int nsim = 1000000;
+  int nsim2 = 2 * nsim;
 
-  bool running = true;
-  int max_steps = 0, steps = 0;
-  do{
-    steps++;
-    int nsim = 1000000;
-    int nsim2 = 2 * nsim;
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap0 = Z * arma::chol(sigma);
 
-    arma::mat Z1 = arma::randn(nsim, k);
-    arma::mat Z2 = -Z1;
-    arma::mat Z = join_cols(Z1, Z2);
-    arma::mat Ap0 = Z * arma::chol(sigma);
+  for(int i=0; i < n; i++){
+    arma::vec mu_max = ALR_TO_ILR * mvf_maximum(X.row(i).t(), mu, inv_sigma, 0.0001, 1000, 0.66);
+    unsigned int s=0;
+    do{
+      arma::mat Ap = mu_max.t() + Ap0.row(s);
 
-    for(int i=0; i < n; i++){
-      arma::vec mu_max = ALR_TO_ILR * mvf_maximum(X.row(i).t(), mu, inv_sigma, 0.0001, 1000, 0.66);
-      unsigned int s=0;
-      do{
-        arma::mat Ap = mu_max.t() + Ap0.row(s);
+      arma::mat Mt = df_x_a(X.row(i), Ap, mu, inv_sigma) /
+                     dnormal(Ap, mu_max, inv_sigma);
+      double DELTA = (Mt(0,0) - M(i,0));
+      M(i,0) = M(i,0) + DELTA / (s+1);
+      M2(i,0) = M2(i,0) + DELTA  * (Mt(0,0) - M(i,0));
 
-        arma::mat Mt = df_x_a(X.row(i), Ap, mu, inv_sigma) /
-        dnormal(Ap, mu_max, inv_sigma);
-        double DELTA = (Mt(0,0) - M(i,0));
-        M(i,0) = M(i,0) + DELTA / (s+1);
-        M2(i,0) = M2(i,0) + DELTA  * (Mt(0,0) - M(i,0));
-
-        for(int j1 = 0; j1 < k; j1++){
-          int J = 1+j1;
-          DELTA = (Ap(0,j1) * Mt(0,0) - M(i,J));
+      for(int j1 = 0; j1 < k; j1++){
+        int J = 1+j1;
+        DELTA = (Ap(0,j1) * Mt(0,0) - M(i,J));
+        M(i,J) = M(i,J) + DELTA / (s+1);
+        M2(i,J) = M2(i,J) + DELTA * (Ap(0,j1) * Mt(0,0) - M(i,J));
+      }
+      int J = 1 + k;
+      for(int j1 = 0; j1 < k; j1++){
+        for(int j2 = 0; j2 <=j1; j2++){
+          DELTA = (Ap(j1) * Ap(j2) * Mt(0,0) - M(i,J));
           M(i,J) = M(i,J) + DELTA / (s+1);
-          M2(i,J) = M2(i,J) + DELTA * (Ap(0,j1) * Mt(0,0) - M(i,J));
+          M2(i,J) = M2(i,J) + DELTA * (Ap(j1) * Ap(j2) * Mt(0,0) - M(i,J));
+          J++;
         }
-
-        int J = 1 + k;
-        for(int j1 = 0; j1 < k; j1++){
-          for(int j2 = 0; j2 <=j1; j2++){
-            DELTA = (Ap(j1) * Ap(j2) * Mt(0,0) - M(i,J));
-            M(i,J) = M(i,J) + DELTA / (s+1);
-            M2(i,J) = M2(i,J) + DELTA * (Ap(j1) * Ap(j2) * Mt(0,0) - M(i,J));
-            J++;
-          }
-        }
-
-        s++;
-      } while ( (s < 10) or (s < nsim2 and se_eps < sqrt(M2(i,0))/s) );
-      //Rcout << s << std::endl;
-      double temp = M(i,0);
-      M.row(i) = M.row(i)/M(i,0);
-      M(i,0) = temp;
-      M2.row(i) = M2.row(i) / (s-1);
-    }
-
-  } while(running & (steps < max_steps));
-
+      }
+      s++;
+    } while ( (s < 10) or (s < nsim2 and se_eps < sqrt(M2(i,0))/s) );
+    double temp = M(i,0);
+    M.row(i) = M.row(i)/M(i,0);
+    M(i,0) = temp;
+    M2.row(i) = M2.row(i) / (s-1);
+  }
   return Rcpp::List::create(M, M2);
-
 }
 
 // Using defaulta mu and Sigma
@@ -265,7 +252,7 @@ List expected3(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.001
 
   arma::vec converged = arma::zeros(n);
 
-  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(3));
+  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(K));
 
   int nsim = 10000000;
   int nsim2 = 2 * nsim;
@@ -276,6 +263,7 @@ List expected3(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.001
   arma::mat Ap0 = Z * arma::chol(sigma);
 
   for(int i=0; i < n; i++){
+    checkUserInterrupt();
     arma::vec mu_max = ALR_TO_ILR * mvf_maximum(X.row(i).t(), mu, inv_sigma, 0.0001, 1000, 0.66);
     unsigned int s=0;
     double DELTA = 0;
@@ -292,6 +280,7 @@ List expected3(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.001
     M2(i,0) = M2(i,0) / (s-1);
 
     for(int j1 = 0; j1 < k; j1++){
+      checkUserInterrupt();
       int J = 1+j1;
       s = 0;
       do{
@@ -309,6 +298,7 @@ List expected3(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.001
     int J = 1 + k;
     for(int j1 = 0; j1 < k; j1++){
       for(int j2 = 0; j2 <=j1; j2++){
+        checkUserInterrupt();
         s = 0;
         do{
           Ap = mu_max.t() + Ap0.row(s);
@@ -348,7 +338,7 @@ List expected4(arma::mat X, arma::vec mu, arma::mat sigma,
   arma::mat inv_sigma = inv_sympd(sigma);
   arma::vec converged = arma::zeros(n);
 
-  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(3));
+  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(K));
 
   int nsim = 10000000;
   int nsim2 = 2 * nsim;
@@ -521,7 +511,7 @@ List expected6(arma::mat X, arma::vec mu, arma::mat sigma,
   }
 
   arma::mat M = arma::zeros(n, 1 + k + k * (k+1) / 2);
-  arma::vec M2 = arma::zeros(n);
+  arma::mat M2 = arma::zeros(n, 1 + k + k * (k+1) / 2);
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
@@ -546,7 +536,7 @@ List expected6(arma::mat X, arma::vec mu, arma::mat sigma,
         double EVAL = Ap(0,j1) * Mt(0,0) / M(i,0);
         DELTA = (EVAL - M(i,J));
         M(i,J) = M(i,J) + DELTA / (s+1);
-        //M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+        M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
         J++;
       }
       J = 1 + k;
@@ -555,16 +545,150 @@ List expected6(arma::mat X, arma::vec mu, arma::mat sigma,
           double EVAL = Ap(j1) * Ap(j2) * Mt(0,0) / M(i,0);
           DELTA = (EVAL - M(i,J));
           M(i,J) = M(i,J) + DELTA / (s+1);
-          //M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+          M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
           J++;
         }
       }
       s++;
     } while ( (s < 10) or (s < nsim2 and se_eps < sqrt(M2(i))/s) );
-    M2(i) = M2(i) / (s-1);
+    M2.row(i) = sqrt(M2.row(i) / (s-1)) / sqrt(s-1);
+  }
+  return Rcpp::List::create(M, M2);
+}
 
+////// FINAL
+// Using defaulta mu and Sigma
+//' @export
+// [[Rcpp::export]]
+List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps = 0.05){
+
+  int K = X.n_cols;
+  int n = X.n_rows;
+  int k = K - 1;
+
+  arma::mat M = arma::zeros(n, 1 + k + k * (k+1) / 2);
+  arma::mat M2 = arma::zeros(n, 1 + k + k * (k+1) / 2);
+
+  arma::mat inv_sigma = inv_sympd(sigma);
+  arma::mat ALR_TO_ILR = arma::inv(ilr_to_alr(K));
+
+  int nsim = 1000000;
+  int nsim2 = 2 * nsim;
+
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap0 = Z * arma::chol(sigma);
+  arma::vec steps = arma::vec(n);
+  for(int i=0; i < n; i++){
+    arma::vec mu_max = ALR_TO_ILR * mvf_maximum(X.row(i).t(), mu, inv_sigma, 0.0001, 1000, 0.66);
+    unsigned int s=0;
+    double se_max=0;
+    double DELTA;
+    arma::mat Ap, Mt;
+
+    do{
+      Ap = mu_max.t() + Ap0.row(s);
+      Mt = df_x_a(X.row(i), Ap, mu, inv_sigma) /
+      dnormal(Ap, mu_max, inv_sigma);
+      DELTA = (Mt(0,0) - M(i,0));
+      M(i,0) = M(i,0) + DELTA / (s+1);
+      M2(i,0) = M2(i,0) + DELTA  * (Mt(0,0) - M(i,0));
+
+      int J = 1;
+      se_max = 0;
+      for(int j1 = 0; j1 < k; j1++){
+        double EVAL = Ap(0,j1) * Mt(0,0) / M(i,0);
+        DELTA = (EVAL - M(i,J));
+        M(i,J) = M(i,J) + DELTA / (s+1);
+        M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+        if(se_max < sqrt(M(i,J)/s)){
+          se_max = sqrt(M(i,J)/s);
+        }
+        J++;
+      }
+      J = 1 + k;
+      for(int j1 = 0; j1 < k; j1++){
+        for(int j2 = 0; j2 <=j1; j2++){
+          double EVAL = Ap(j1) * Ap(j2) * Mt(0,0) / M(i,0);
+          DELTA = (EVAL - M(i,J));
+          M(i,J) = M(i,J) + DELTA / (s+1);
+          M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+          J++;
+        }
+      }
+      s++;
+    } while ( (s < 10) or (s < nsim2 and se_eps < se_max) );
+    M2.row(i) = sqrt(M2.row(i) / (s-1)) / sqrt(s-1);
+    steps(i) = s;
+  }
+  return Rcpp::List::create(M, M2, steps);
+}
+
+
+//' @export
+// [[Rcpp::export]]
+List expected_guided(arma::mat X, arma::vec mu, arma::mat sigma,
+               arma::mat mu_x, arma::cube sigma_x,
+               double se_eps = 0.05){
+
+  int K = X.n_cols;
+  int n = X.n_rows;
+  int k = K - 1;
+
+  int nsim = 1000000;
+  int nsim2 = 2 * nsim;
+
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z = arma::mat(nsim2, k);
+  for(int i = 0; i < nsim;i++){
+    Z.row(2*i) = Z1.row(i);
+    Z.row(2*i+1) = -Z1.row(i);
   }
 
+  arma::mat M = arma::zeros(n, 1 + k + k * (k+1) / 2);
+  arma::mat M2 = arma::zeros(n, 1 + k + k * (k+1) / 2);
 
+  arma::mat inv_sigma = inv_sympd(sigma);
+
+  for(int i=0; i < n; i++){
+
+    arma::mat inv_sigma_x = inv_sympd(sigma_x.slice(i));
+    arma::mat Ap0 = Z * arma::chol(sigma_x.slice(i));
+
+    unsigned int s=0;
+    double se_max=0;
+    double DELTA = 0;
+    arma::mat Ap, Mt;
+    do{
+      Ap = mu_x.col(i).t() + Ap0.row(s);
+      Mt = df_x_a(X.row(i), Ap, mu, inv_sigma) / dnormal(Ap, mu_x.col(i), inv_sigma_x);
+
+      DELTA = (Mt(0,0) - M(i,0));
+      M(i,0) = M(i,0) + DELTA / (s+1);
+      M2(i) = M2(i) + DELTA  * (Mt(0,0) - M(i,0));
+
+      int J = 1;
+      for(int j1 = 0; j1 < k; j1++){
+        double EVAL = Ap(0,j1) * Mt(0,0) / M(i,0);
+        DELTA = (EVAL - M(i,J));
+        M(i,J) = M(i,J) + DELTA / (s+1);
+        M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+        J++;
+      }
+      J = 1 + k;
+      for(int j1 = 0; j1 < k; j1++){
+        for(int j2 = 0; j2 <=j1; j2++){
+          double EVAL = Ap(j1) * Ap(j2) * Mt(0,0) / M(i,0);
+          DELTA = (EVAL - M(i,J));
+          M(i,J) = M(i,J) + DELTA / (s+1);
+          M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
+          J++;
+        }
+      }
+      s++;
+    } while ( (s < 10) or (s < nsim2 and se_eps < sqrt(M2(i,0))/s) );
+    M2.row(i) = sqrt(M2.row(i) / (s-1)) / sqrt(s-1);
+  }
   return Rcpp::List::create(M, M2);
 }

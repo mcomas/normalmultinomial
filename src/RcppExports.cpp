@@ -289,22 +289,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// expected5b
-List expected5b(arma::mat X, arma::vec mu, arma::mat sigma, arma::mat mu_x, arma::cube sigma_x, double se_eps);
-RcppExport SEXP normalmultinomial_expected5b(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP mu_xSEXP, SEXP sigma_xSEXP, SEXP se_epsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type mu_x(mu_xSEXP);
-    Rcpp::traits::input_parameter< arma::cube >::type sigma_x(sigma_xSEXP);
-    Rcpp::traits::input_parameter< double >::type se_eps(se_epsSEXP);
-    __result = Rcpp::wrap(expected5b(X, mu, sigma, mu_x, sigma_x, se_eps));
-    return __result;
-END_RCPP
-}
 // expected6
 List expected6(arma::mat X, arma::vec mu, arma::mat sigma, arma::mat mu_x, arma::cube sigma_x, double se_eps);
 RcppExport SEXP normalmultinomial_expected6(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP mu_xSEXP, SEXP sigma_xSEXP, SEXP se_epsSEXP) {
@@ -321,6 +305,36 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// expected_initial
+List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps);
+RcppExport SEXP normalmultinomial_expected_initial(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP se_epsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type se_eps(se_epsSEXP);
+    __result = Rcpp::wrap(expected_initial(X, mu, sigma, se_eps));
+    return __result;
+END_RCPP
+}
+// expected_guided
+List expected_guided(arma::mat X, arma::vec mu, arma::mat sigma, arma::mat mu_x, arma::cube sigma_x, double se_eps);
+RcppExport SEXP normalmultinomial_expected_guided(SEXP XSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP mu_xSEXP, SEXP sigma_xSEXP, SEXP se_epsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu_x(mu_xSEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type sigma_x(sigma_xSEXP);
+    Rcpp::traits::input_parameter< double >::type se_eps(se_epsSEXP);
+    __result = Rcpp::wrap(expected_guided(X, mu, sigma, mu_x, sigma_x, se_eps));
+    return __result;
+END_RCPP
+}
 // normalmultinomial_fitting
 List normalmultinomial_fitting(arma::mat X, int nsim, int niter, double prop, int version);
 RcppExport SEXP normalmultinomial_normalmultinomial_fitting(SEXP XSEXP, SEXP nsimSEXP, SEXP niterSEXP, SEXP propSEXP, SEXP versionSEXP) {
@@ -333,6 +347,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type prop(propSEXP);
     Rcpp::traits::input_parameter< int >::type version(versionSEXP);
     __result = Rcpp::wrap(normalmultinomial_fitting(X, nsim, niter, prop, version));
+    return __result;
+END_RCPP
+}
+// nearestPSD
+arma::mat nearestPSD(arma::mat x, double eig_tol, int maxit, double conv_tol, double posd_tol);
+RcppExport SEXP normalmultinomial_nearestPSD(SEXP xSEXP, SEXP eig_tolSEXP, SEXP maxitSEXP, SEXP conv_tolSEXP, SEXP posd_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double >::type eig_tol(eig_tolSEXP);
+    Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type conv_tol(conv_tolSEXP);
+    Rcpp::traits::input_parameter< double >::type posd_tol(posd_tolSEXP);
+    __result = Rcpp::wrap(nearestPSD(x, eig_tol, maxit, conv_tol, posd_tol));
     return __result;
 END_RCPP
 }

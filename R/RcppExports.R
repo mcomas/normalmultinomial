@@ -112,13 +112,18 @@ expected5 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
 }
 
 #' @export
-expected5b <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
-    .Call('normalmultinomial_expected5b', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
+expected6 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
+    .Call('normalmultinomial_expected6', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
 }
 
 #' @export
-expected6 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
-    .Call('normalmultinomial_expected6', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
+expected_initial <- function(X, mu, sigma, se_eps = 0.05) {
+    .Call('normalmultinomial_expected_initial', PACKAGE = 'normalmultinomial', X, mu, sigma, se_eps)
+}
+
+#' @export
+expected_guided <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.05) {
+    .Call('normalmultinomial_expected_guided', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
 }
 
 #' Finds the mean and covariance of a normal multinomial distribution
@@ -130,6 +135,11 @@ expected6 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
 #' @export
 normalmultinomial_fitting <- function(X, nsim = 100L, niter = 20L, prop = 0.66, version = 0L) {
     .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version)
+}
+
+#' @export
+nearestPSD <- function(x, eig_tol = 1e-06, maxit = 100L, conv_tol = 1e-07, posd_tol = 1e-03) {
+    .Call('normalmultinomial_nearestPSD', PACKAGE = 'normalmultinomial', x, eig_tol, maxit, conv_tol, posd_tol)
 }
 
 #' Finds the mean and covariance of a normal multinomial distribution
