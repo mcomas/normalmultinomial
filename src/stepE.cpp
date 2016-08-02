@@ -11,6 +11,8 @@
 
 using namespace Rcpp;
 
+//' @export
+// [[Rcpp::export]]
 Rcpp::List expectedA1(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
   int K = x.size();
   int k = K - 1;
