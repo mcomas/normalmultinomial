@@ -55,7 +55,7 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 100, int niter = 20,
       arma::mat mu_next = fit[0];
       arma::mat sigma_next = fit[1];
       mu = mu_next.t();
-      sigma_next = sigma_next;
+      sigma = sigma_next;
     }
   }
   if(version == 1){
@@ -64,7 +64,7 @@ List normalmultinomial_fitting(arma::mat X, int nsim = 100, int niter = 20,
       arma::mat mu_next = fit[0];
       arma::mat sigma_next = fit[1];
       mu = mu_next.t();
-      sigma_next = sigma_next;
+      sigma = sigma_next;
     }
   }
 

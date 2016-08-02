@@ -36,6 +36,8 @@ Rcpp::List expectedA1(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100
   return Rcpp::List::create(expected_m1, expected_m2);
 }
 
+//' @export
+// [[Rcpp::export]]
 Rcpp::List expectedA2(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
   int K = x.size();
   int k = K - 1;
@@ -144,6 +146,39 @@ Rcpp::List expectedA4(arma::vec a, arma::vec x, arma::vec mu, arma::mat sigma, i
 
 //' @export
 // [[Rcpp::export]]
+Rcpp::List expectedA5(arma::vec x, arma::vec mu, arma::mat sigma,
+                      arma::vec mu_x, arma::mat sigma_x, int nsim = 100){
+  int K = x.size();
+  int k = K - 1;
+  int nsim2 = 2 * nsim;
+
+  arma::mat Z1 = arma::randn(nsim, k);
+  arma::mat Z2 = -Z1;
+  arma::mat Z = join_cols(Z1, Z2);
+  arma::mat Ap = arma::mat(nsim2, k);
+
+  arma::mat inv_sigma = inv_sympd(sigma);
+  arma::mat inv_sigma_x = inv_sympd(sigma_x);
+
+  Ap = arma::repmat(mu_x.t(), nsim2, 1) + Z * arma::chol(sigma);
+
+  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
+                  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu_x, inv_sigma_x);
+  arma::vec lik_st = lik / mean(lik);
+
+  arma::vec expected_m1 = arma::vec(k);
+  arma::mat expected_m2 = arma::mat(k,k);
+  for(int i = 0;i < k; i++){
+    expected_m1[i] = mean(Ap.col(i) % lik_st);
+    for(int j = 0;j < k; j++){
+      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
+    }
+  }
+  return Rcpp::List::create(expected_m1, expected_m2);
+}
+
+//' @export
+// [[Rcpp::export]]
 arma::mat stepE(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
   int n = X.n_rows;
   int K = X.n_cols;
@@ -193,6 +228,55 @@ Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int 
   sigma_next = sigma_next / n - mu_next * mu_next.t();
   return Rcpp::List::create(mu_next, sigma_next);
 }
+
+//' @export
+// [[Rcpp::export]]
+Rcpp::List stepEM3(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
+  int n = X.n_rows;
+  int K = X.n_cols;
+  arma::vec mu_next = arma::zeros(K-1);
+  arma::mat sigma_next = arma::zeros(K-1, K-1);
+
+  arma::mat mu_x = arma::mat(K-1, n);
+  arma::cube sigma_x = arma::cube(K-1, K-1, n);
+  for(int i = 0; i < n; i++){
+    Rcpp::List moments = expectedA2(X.row(i).t(), mu, sigma, nsim);
+    arma::mat m1 = moments[0];
+    arma::mat m2 = moments[1];
+    mu_x.col(i) = m1;
+    sigma_x.slice(i) = m2 - m1 * m1.t();
+    mu_next += m1;
+    sigma_next += m2;
+  }
+  mu_next = mu_next / n;
+  sigma_next = sigma_next / n - mu_next * mu_next.t();
+  return Rcpp::List::create(mu_next, sigma_next, mu_x, sigma_x);
+}
+
+//' @export
+// [[Rcpp::export]]
+Rcpp::List stepEM4(arma::mat X, arma::vec mu, arma::mat sigma,
+                   arma::mat mu_x, arma::cube sigma_x, int nsim = 100){
+  int n = X.n_rows;
+  int K = X.n_cols;
+  arma::vec mu_next = arma::zeros(K-1);
+  arma::mat sigma_next = arma::zeros(K-1, K-1);
+
+  for(int i = 0; i < n; i++){
+    Rcpp::List moments = expectedA5(X.row(i).t(), mu, sigma,
+                                    mu_x.col(i), sigma_x.slice(i), nsim);
+    arma::mat m1 = moments[0];
+    arma::mat m2 = moments[1];
+    mu_x.col(i) = m1;
+    sigma_x.slice(i) = m2 - m1 * m1.t();
+    mu_next += m1;
+    sigma_next += m2;
+  }
+  mu_next = mu_next / n;
+  sigma_next = sigma_next / n - mu_next * mu_next.t();
+  return Rcpp::List::create(mu_next, sigma_next, mu_x, sigma_x);
+}
+
 
 // [[Rcpp::export]]
 double c_dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){

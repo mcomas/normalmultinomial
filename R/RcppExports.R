@@ -196,6 +196,16 @@ c_rnormalmultinomial <- function(mu, sigma, size, seed) {
 }
 
 #' @export
+expectedA2 <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedA2', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}
+
+#' @export
+expectedA5 <- function(x, mu, sigma, mu_x, sigma_x, nsim = 100L) {
+    .Call('normalmultinomial_expectedA5', PACKAGE = 'normalmultinomial', x, mu, sigma, mu_x, sigma_x, nsim)
+}
+
+#' @export
 stepE <- function(X, mu, sigma, nsim = 100L) {
     .Call('normalmultinomial_stepE', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
 }
@@ -208,6 +218,16 @@ stepEM1 <- function(X, mu, sigma, nsim = 100L) {
 #' @export
 stepEM2 <- function(A, X, mu, sigma, nsim = 100L) {
     .Call('normalmultinomial_stepEM2', PACKAGE = 'normalmultinomial', A, X, mu, sigma, nsim)
+}
+
+#' @export
+stepEM3 <- function(X, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_stepEM3', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
+}
+
+#' @export
+stepEM4 <- function(X, mu, sigma, mu_x, sigma_x, nsim = 100L) {
+    .Call('normalmultinomial_stepEM4', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, nsim)
 }
 
 c_dnormalmultinomial <- function(x, mu, sigma, nsim = 100L) {

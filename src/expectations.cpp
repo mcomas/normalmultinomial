@@ -580,6 +580,7 @@ List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps 
   arma::mat Z = join_cols(Z1, Z2);
   arma::mat Ap0 = Z * arma::chol(sigma);
   arma::vec steps = arma::vec(n);
+
   for(int i=0; i < n; i++){
     arma::vec mu_max = ALR_TO_ILR * mvf_maximum(X.row(i).t(), mu, inv_sigma, 0.0001, 1000, 0.66);
     unsigned int s=0;
@@ -590,7 +591,7 @@ List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps 
     do{
       Ap = mu_max.t() + Ap0.row(s);
       Mt = df_x_a(X.row(i), Ap, mu, inv_sigma) /
-      dnormal(Ap, mu_max, inv_sigma);
+           dnormal(Ap, mu_max, inv_sigma);
       DELTA = (Mt(0,0) - M(i,0));
       M(i,0) = M(i,0) + DELTA / (s+1);
       M2(i,0) = M2(i,0) + DELTA  * (Mt(0,0) - M(i,0));
@@ -598,7 +599,7 @@ List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps 
       int J = 1;
       se_max = 0;
       for(int j1 = 0; j1 < k; j1++){
-        double EVAL = Ap(0,j1) * Mt(0,0) / M(i,0);
+        double EVAL = Ap(0,j1) * Mt(0,0);
         DELTA = (EVAL - M(i,J));
         M(i,J) = M(i,J) + DELTA / (s+1);
         M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
@@ -610,7 +611,7 @@ List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps 
       J = 1 + k;
       for(int j1 = 0; j1 < k; j1++){
         for(int j2 = 0; j2 <=j1; j2++){
-          double EVAL = Ap(j1) * Ap(j2) * Mt(0,0) / M(i,0);
+          double EVAL = Ap(j1) * Ap(j2) * Mt(0,0);
           DELTA = (EVAL - M(i,J));
           M(i,J) = M(i,J) + DELTA / (s+1);
           M2(i,J) = M2(i,J) + DELTA * (EVAL - M(i,J));
@@ -619,6 +620,9 @@ List expected_initial(arma::mat X, arma::vec mu, arma::mat sigma, double se_eps 
       }
       s++;
     } while ( (s < 10) or (s < nsim2 and se_eps < se_max) );
+    double temp = M(i,0);
+    M.row(i) = M.row(i)/M(i,0);
+    M(i,0) = temp;
     M2.row(i) = sqrt(M2.row(i) / (s-1)) / sqrt(s-1);
     steps(i) = s;
   }

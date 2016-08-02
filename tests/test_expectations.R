@@ -11,13 +11,16 @@ df_x_3(X, MU, SIGMA, nsim = 100000)
 microbenchmark(
   all = df_x_1(X, MU, SIGMA, nsim = 1000),
   ind = df_x_2(X, MU, SIGMA, nsim = 1000),
-  max = df_x_3(X, MU, SIGMA, nsim = 1000)
-)
+  max = df_x_3(X, MU, SIGMA, nsim = 1000) )
 
 N = 1000
 (E <- expected1(X, MU, SIGMA, nsim = N))[[1]]
 round(inv_ilr_coordinates(E[[1]][,2:3]),3)
 sqrt(E[[2]]/N)
+
+(E <- expected_initial(X, MU, SIGMA, se_eps = 0.0001))[[1]]
+round(inv_ilr_coordinates(E[[1]][,2:3]),3)
+
 
 (E <- expected1(X, MU, SIGMA, nsim = 1000))
 round(inv_ilr_coordinates(E[[1]][,2:3]),3)
