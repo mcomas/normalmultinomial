@@ -696,3 +696,47 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// expectedA5_all
+Rcpp::List expectedA5_all(arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_expectedA5_all(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    __result = Rcpp::wrap(expectedA5_all(x, mu, sigma, nsim));
+    return __result;
+END_RCPP
+}
+// expectedMonteCarlo
+Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu, arma::mat sigma, int nsim, bool antithetic_variates, bool importance_sampling_mu);
+RcppExport SEXP normalmultinomial_expectedMonteCarlo(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP, SEXP antithetic_variatesSEXP, SEXP importance_sampling_muSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    Rcpp::traits::input_parameter< bool >::type antithetic_variates(antithetic_variatesSEXP);
+    Rcpp::traits::input_parameter< bool >::type importance_sampling_mu(importance_sampling_muSEXP);
+    __result = Rcpp::wrap(expectedMonteCarlo(x, mu, sigma, nsim, antithetic_variates, importance_sampling_mu));
+    return __result;
+END_RCPP
+}
+// expectedMetropolis
+Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu, arma::mat sigma, int nsim);
+RcppExport SEXP normalmultinomial_expectedMetropolis(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nsimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< int >::type nsim(nsimSEXP);
+    __result = Rcpp::wrap(expectedMetropolis(x, mu, sigma, nsim));
+    return __result;
+END_RCPP
+}

@@ -259,3 +259,18 @@ expectedA4_all <- function(x, mu, sigma, nsim = 100L) {
     .Call('normalmultinomial_expectedA4_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
 }
 
+#' @export
+expectedA5_all <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedA5_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}
+
+#' @export
+expectedMonteCarlo <- function(x, mu, sigma, nsim = 100L, antithetic_variates = TRUE, importance_sampling_mu = TRUE) {
+    .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim, antithetic_variates, importance_sampling_mu)
+}
+
+#' @export
+expectedMetropolis <- function(x, mu, sigma, nsim = 100L) {
+    .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
+}
+
