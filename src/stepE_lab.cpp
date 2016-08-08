@@ -255,7 +255,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu, arma::mat sigma, int ns
     arma::vec lik1_st = lik1 / mean(lik1);
     arma::vec lik2_st = lik2 / mean(lik2);
 
-    M0 =  (lik1_st + lik2_st) / 2;
+    M0 =  (lik1 + lik2) / 2;
     for(int i = 0;i < k; i++){
       M1.col(i) = (Ap1.col(i) % lik1_st + Ap2.col(i) % lik2_st) / 2;
       for(int j = 0;j < k; j++){
@@ -263,7 +263,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu, arma::mat sigma, int ns
       }
     }
   }else{
-    M0 =  lik1 / mean(lik1);
+    M0 =  lik1;
     for(int i = 0;i < k; i++){
       M1.col(i) = Ap1.col(i) % M0;
       for(int j = 0;j < k; j++){
