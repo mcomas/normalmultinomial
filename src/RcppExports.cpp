@@ -740,3 +740,19 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// expectedMonteCarloFixed
+Rcpp::List expectedMonteCarloFixed(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, bool antithetic_variates, bool importance_sampling_mu);
+RcppExport SEXP normalmultinomial_expectedMonteCarloFixed(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP antithetic_variatesSEXP, SEXP importance_sampling_muSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< bool >::type antithetic_variates(antithetic_variatesSEXP);
+    Rcpp::traits::input_parameter< bool >::type importance_sampling_mu(importance_sampling_muSEXP);
+    __result = Rcpp::wrap(expectedMonteCarloFixed(x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu));
+    return __result;
+END_RCPP
+}

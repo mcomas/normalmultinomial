@@ -274,3 +274,8 @@ expectedMetropolis <- function(x, mu_ilr, sigma_ilr, nsim = 100L) {
     .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, nsim)
 }
 
+#' @export
+expectedMonteCarloFixed <- function(x, mu_ilr, sigma_ilr, Z, antithetic_variates = TRUE, importance_sampling_mu = TRUE) {
+    .Call('normalmultinomial_expectedMonteCarloFixed', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu)
+}
+
