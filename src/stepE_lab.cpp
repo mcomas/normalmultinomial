@@ -222,7 +222,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
 
   arma::mat ILR_TO_ALR = ilr_to_alr(k);
   arma::vec mu = ILR_TO_ALR * mu_ilr;
-  arma::vec sigma = ILR_TO_ALR * mu_ilr * ILR_TO_ALR.t();
+  arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
@@ -288,7 +288,7 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
 
   arma::mat ILR_TO_ALR = ilr_to_alr(k);
   arma::vec mu = ILR_TO_ALR * mu_ilr;
-  arma::vec sigma = ILR_TO_ALR * mu_ilr * ILR_TO_ALR.t();
+  arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat Z1 = arma::randn(nsim, k).t();
   arma::vec U = arma::randu(nsim);
