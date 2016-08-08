@@ -225,7 +225,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
 
   arma::vec mu = ILR_TO_ALR * mu_ilr;
-  arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
@@ -233,7 +233,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat sampling_sigma;
   arma::mat inv_sampling_sigma;
   if(importance_sampling_mu){
-    sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
+    sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66).t();
   }else{
     sampling_mu =  mu.t();
   }
@@ -244,7 +244,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat Ap1 = arma::repmat(sampling_mu, nsim, 1) + Z1 * arma::chol(sampling_sigma);
   arma::vec lik1;
   if(importance_sampling_mu){
-    lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu, inv_sampling_sigma);
+    lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu.t(), inv_sampling_sigma);
   }else{
     lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) );
   }
@@ -257,7 +257,7 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
     arma::mat Ap2 = arma::repmat(sampling_mu, nsim, 1) + Z2 * arma::chol(sampling_sigma);
     arma::vec lik2;
     if(importance_sampling_mu){
-      lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap2, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu, inv_sampling_sigma);
+      lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap2, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu.t(), inv_sampling_sigma);
     }else{
       lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) );
     }
@@ -299,7 +299,7 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
 
   arma::vec mu = ILR_TO_ALR * mu_ilr;
-  arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat Z1 = arma::randn(nsim, k).t();
   arma::vec U = arma::randu(nsim);
