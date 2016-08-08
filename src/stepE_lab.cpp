@@ -2,6 +2,7 @@
 
 #include <RcppArmadillo.h>
 #include "stepE.h"
+#include "coda.h"
 #include "loglik.h"
 #include <random>
 #include <vector>
@@ -212,11 +213,16 @@ Rcpp::List expectedA5_all(arma::vec x, arma::vec mu, arma::mat sigma, int nsim =
 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100,
+Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim = 100,
                               bool antithetic_variates = true,
                               bool importance_sampling_mu = true){
+
   int K = x.size();
   int k = K - 1;
+
+  arma::mat ILR_TO_ALR = ilr_to_alr(k);
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::vec sigma = ILR_TO_ALR * mu_ilr * ILR_TO_ALR.t();
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
@@ -276,9 +282,13 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu, arma::mat sigma, int ns
 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
+Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim = 100){
   int K = x.size();
   int k = K - 1;
+
+  arma::mat ILR_TO_ALR = ilr_to_alr(k);
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::vec sigma = ILR_TO_ALR * mu_ilr * ILR_TO_ALR.t();
 
   arma::mat Z1 = arma::randn(nsim, k).t();
   arma::vec U = arma::randu(nsim);
