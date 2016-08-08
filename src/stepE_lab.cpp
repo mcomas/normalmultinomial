@@ -221,6 +221,9 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   int k = K - 1;
 
   arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
   arma::vec mu = ILR_TO_ALR * mu_ilr;
   arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
@@ -278,6 +281,10 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
       }
     }
   }
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
   return Rcpp::List::create(M0, M1, M2);
 }
 
@@ -288,6 +295,8 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   int k = K - 1;
 
   arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
 
   arma::vec mu = ILR_TO_ALR * mu_ilr;
   arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
@@ -328,6 +337,10 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
     for(int j = 0;j < k; j++){
       M2.tube(i,j) = Ap1.row(i).t() % Ap1.row(j).t();
     }
+  }
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
   }
   return Rcpp::List::create(M0, M1, M2);
 }
