@@ -269,11 +269,12 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
       }
     }
   }else{
+    arma::vec lik1_st = lik1 / mean(lik1);
     M0 =  lik1;
     for(int i = 0;i < k; i++){
-      M1.col(i) = Ap1.col(i) % M0;
+      M1.col(i) = Ap1.col(i) % lik1_st;
       for(int j = 0;j < k; j++){
-        M2.tube(i,j) = Ap1.col(i) % Ap1.col(j) % M0;
+        M2.tube(i,j) = Ap1.col(i) % Ap1.col(j) % lik1_st;
       }
     }
   }
@@ -287,16 +288,9 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   int k = K - 1;
 
   arma::mat ILR_TO_ALR = ilr_to_alr(K);
-  Rcout << "ILR > ALR matrix:" <<std::endl;
-  Rcout << ILR_TO_ALR;
-  Rcout << "Mu:" <<std::endl;
-  Rcout << mu_ilr;
+
   arma::vec mu = ILR_TO_ALR * mu_ilr;
-  Rcout << mu;
-  Rcout << "Sigma:" <<std::endl;
-  Rcout << sigma_ilr;
   arma::vec sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
-  Rcout << sigma;
 
   arma::mat Z1 = arma::randn(nsim, k).t();
   arma::vec U = arma::randu(nsim);
