@@ -13,9 +13,11 @@ load('data/Pigs.rda')
 X = as.matrix(Pigs)
 MU = ilr_coordinates(matrix(apply(X, 2, mean), nrow=1))
 SIGMA = diag(5)
+
 library(randtoolbox)
 Z = torus(1000, dim = 5, normal = TRUE)
 #Z = rnormal(100, rep(0,5), diag(5))
+
 
 
 
