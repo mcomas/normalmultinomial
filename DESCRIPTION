@@ -10,7 +10,8 @@ Description: A colletion of tools to simulate samples from a Normal-Multinomial 
 License: GPL
 LazyData: TRUE
 Imports:
-    Rcpp (>= 0.12.5)
+    Rcpp (>= 0.12.5),
+    randtoolbox
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
