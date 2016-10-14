@@ -62,6 +62,8 @@ nm_fit_mean = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, par
 
 #' @export
 nm_fit_spherical = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL){
+  D = ncol(X)
+
   MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
   SIGMA = sigma
 
