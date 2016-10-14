@@ -238,6 +238,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// expectedMoment1_alr
+Rcpp::List expectedMoment1_alr(arma::vec x, arma::vec mu, arma::mat sigma, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMoment1_alr(SEXP xSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP ZSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    __result = Rcpp::wrap(expectedMoment1_alr(x, mu, sigma, Z));
+    return __result;
+END_RCPP
+}
 // expectedMoment1
 Rcpp::List expectedMoment1(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
 RcppExport SEXP normalmultinomial_expectedMoment1(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {

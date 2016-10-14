@@ -89,6 +89,11 @@ expectedMetropolis <- function(x, mu_ilr, sigma_ilr, nsim = 100L) {
 }
 
 #' @export
+expectedMoment1_alr <- function(x, mu, sigma, Z) {
+    .Call('normalmultinomial_expectedMoment1_alr', PACKAGE = 'normalmultinomial', x, mu, sigma, Z)
+}
+
+#' @export
 expectedMoment1 <- function(x, mu_ilr, sigma_ilr, Z) {
     .Call('normalmultinomial_expectedMoment1', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
 }
