@@ -3,11 +3,11 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL){
   MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
   SIGMA = diag(ncol(X)-1)
 
-  Z = matrix(halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
   err = eps + 1
   while(err > eps){
     if(!is.null(parallel.cluster)){
-      FIT = parApply(parallel.cluster, X, 1, expectedMoment1, MU, SIGMA, Z)
+      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMoment1, MU, SIGMA, Z)
     }else{
       FIT = apply(X, 1, expectedMoment1, MU, SIGMA, Z)
     }
@@ -24,9 +24,9 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL){
 
 #' @export
 nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
-  Z = matrix(halton(nsim, dim = nrow(sigma), normal = TRUE), ncol=nrow(sigma))
+  Z = matrix(randtoolbox::halton(nsim, dim = nrow(sigma), normal = TRUE), ncol=nrow(sigma))
   if(!is.null(parallel.cluster)){
-    FIT = parApply(parallel.cluster, X, 1, expectedMoment1, mu, sigma, Z)
+    FIT = paralell::parApply(parallel.cluster, X, 1, expectedMoment1, mu, sigma, Z)
   }else{
     FIT = apply(X, 1, expectedMoment1, mu, sigma, Z)
   }
