@@ -26,7 +26,7 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
 nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
   Z = matrix(randtoolbox::torus(nsim, dim = nrow(sigma), normal = TRUE), ncol=nrow(sigma))
   if(!is.null(parallel.cluster)){
-    FIT = paralell::parApply(parallel.cluster, X, 1, expectedMoment1, mu, sigma, Z)
+    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMoment1, mu, sigma, Z)
   }else{
     FIT = apply(X, 1, expectedMoment1, mu, sigma, Z)
   }
