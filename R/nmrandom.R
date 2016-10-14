@@ -113,7 +113,6 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
 #' @return probability
 #' @examples
 #' dnormalmultinomial(c(0,0), mu = c(0,0), sigma = matrix(c(2,1,1,2), nrow=2), nsim = 1000)
-#' @export
 dnormalmultinomial <- function(x, mu, sigma, nsim = 100) {
   if( ! (is.vector(x) & is.numeric(x)) ){
     stop("'x' must be a numeric vector")

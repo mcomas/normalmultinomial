@@ -1,7 +1,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
-#include "stepE.h"
+#include "coda.h"
 #include "loglik.h"
 #include <random>
 #include <vector>
@@ -13,290 +13,241 @@ using namespace Rcpp;
 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List expectedA1(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
+Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim = 100){
   int K = x.size();
   int k = K - 1;
-  int nsim2 = 2 * nsim;
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
 
-  Ap = arma::repmat(mu.t(), nsim2, 1) + Z * arma::chol(sigma);
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
 
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) );
-  arma::vec lik_st = lik / mean(lik);
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
-  arma::vec expected_m1 = arma::vec(k);
-  arma::mat expected_m2 = arma::mat(k,k);
-  for(int i = 0;i < k; i++){
-    expected_m1[i] = mean(Ap.col(i) % lik_st);
-    for(int j = 0;j < k; j++){
-      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
-    }
-  }
-  return Rcpp::List::create(expected_m1, expected_m2);
-}
-
-//' @export
-// [[Rcpp::export]]
-Rcpp::List expectedA2(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int K = x.size();
-  int k = K - 1;
-  int nsim2 = 2 * nsim;
-
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
-
-  arma::mat inv_sigma = inv_sympd(sigma);
-  arma::vec mu0 = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
-
-  Ap = arma::repmat(mu0.t(), nsim2, 1) + Z * arma::chol(sigma);
-
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
-    mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu0, inv_sigma);
-  arma::vec lik_st = lik / mean(lik);
-
-  arma::vec expected_m1 = arma::vec(k);
-  arma::mat expected_m2 = arma::mat(k,k);
-  for(int i = 0;i < k; i++){
-    expected_m1[i] = mean(Ap.col(i) % lik_st);
-    for(int j = 0;j < k; j++){
-      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
-    }
-  }
-  return Rcpp::List::create(expected_m1, expected_m2);
-}
-
-Rcpp::List expectedA3(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int K = x.size();
-  int k = K - 1;
-  int nsim2 = 2 * nsim;
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
-
-  arma::mat inv_sigma = inv_sympd(sigma);
-  arma::vec mu0 = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
-
-  arma::mat H = arma::mat(k,k);
-  for(int i=0;i<k;i++){
-    for(int j=0;j<k;j++){
-      H(i,j) = mvf_deriv2(i, j, mu0, mu, inv_sigma, x);
-    }
-  }
-  arma::mat Hinv = inv_sympd(-H);
-  //Rcout << -H << std::endl;
-
-  Ap = arma::repmat(mu0.t(), nsim2, 1) + Z * arma::chol(Hinv);
-
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
-  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu0, -H);
-  arma::vec lik_st = lik / mean(lik);
-
-  arma::vec expected_m1 = arma::vec(k);
-  arma::mat expected_m2 = arma::mat(k,k);
-  for(int i = 0;i < k; i++){
-    expected_m1[i] = mean(Ap.col(i) % lik_st);
-    for(int j = 0;j < k; j++){
-      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
-    }
-  }
-  return Rcpp::List::create(expected_m1, expected_m2);
-}
-
-
-Rcpp::List expectedA4(arma::vec a, arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int K = x.size();
-  int k = K - 1;
-  int nsim2 = 2 * nsim;
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
+  arma::mat Z1 = arma::randn(nsim, k).t();
+  arma::vec U = arma::randu(nsim);
 
   arma::mat inv_sigma = inv_sympd(sigma);
 
-  arma::mat Ha = arma::mat(k,k);
-  for(int i=0;i<k;i++){
-    for(int j=0;j<k;j++){
-      Ha(i,j) = mvf_deriv2(i, j, a, mu, inv_sigma, x);
+  arma::mat Ap1 = arma::mat(k, nsim);
+  Ap1.col(0) = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
+
+  arma::mat M0 = arma::mat(nsim, 1);
+  for(int i=1;i<nsim;i++){
+    arma::vec x_proposal = Ap1.col(i-1) + Z1.col(i-1);
+
+    double f_prev = exp( mvf(Ap1.col(i-1), mu, inv_sigma, x) );
+    double f_next = exp( mvf(x_proposal, mu, inv_sigma, x) );
+    double alpha = f_next / f_prev;
+    if(1 < alpha){
+      Ap1.col(i) = x_proposal;
+      M0(i,0) = f_next;
+    }else{
+      if(U(i) < alpha){
+        Ap1.col(i) = x_proposal;
+        M0(i,0) = f_next;
+      }else{
+        Ap1.col(i)=  Ap1.col(i-1);
+        M0(i,0) = f_prev;
+      }
     }
   }
-  arma::mat Hinv = inv_sympd(-Ha);
-  //Rcout << -H << std::endl;
 
-  Ap = arma::repmat(a.t(), nsim2, 1) + Z * arma::chol(Hinv);
-
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
-  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, a, -Ha);
-  arma::vec lik_st = lik / mean(lik);
-
-  arma::vec expected_m1 = arma::vec(k);
-  arma::mat expected_m2 = arma::mat(k,k);
+  arma::mat M1 = arma::mat(nsim, k);
+  arma::cube M2 = arma::cube(k,k, nsim);
   for(int i = 0;i < k; i++){
-    expected_m1[i] = mean(Ap.col(i) % lik_st);
+    M1.col(i) = Ap1.row(i).t();
     for(int j = 0;j < k; j++){
-      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
+      M2.tube(i,j) = Ap1.row(i).t() % Ap1.row(j).t();
     }
   }
-  return Rcpp::List::create(expected_m1, expected_m2);
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1, M2);
 }
 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List expectedA5(arma::vec x, arma::vec mu, arma::mat sigma,
-                      arma::vec mu_x, arma::mat sigma_x, int nsim = 100){
+Rcpp::List expectedMoment1(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z){
   int K = x.size();
   int k = K - 1;
-  int nsim2 = 2 * nsim;
+  int nsim = Z.n_rows;
+  arma::vec x_noz = x.replace(0, 0.66);
 
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat inv_sigma = inv_sympd(sigma);
-  arma::mat inv_sigma_x = inv_sympd(sigma_x);
 
-  Ap = arma::repmat(mu_x.t(), nsim2, 1) + Z * arma::chol(sigma);
+  arma::mat sampling_mu;
+  arma::mat sampling_sigma;
+  arma::mat inv_sampling_sigma;
 
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
-                  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu_x, inv_sigma_x);
-  arma::vec lik_st = lik / mean(lik);
+  // Sampling from mode selection
+  sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66).t();
+  if( sampling_mu.has_nan() ){
+    sampling_mu = log( x_noz(arma::span(0,k-1),0) / x_noz(k,0)).t();
+  }
 
-  arma::vec expected_m1 = arma::vec(k);
-  arma::mat expected_m2 = arma::mat(k,k);
+  sampling_sigma = sigma;
+  inv_sampling_sigma = inv_sigma;
+
+  arma::mat Z1 = Z;
+  arma::mat Ap1 = arma::repmat(sampling_mu, nsim, 1) + Z1 * arma::chol(sampling_sigma);
+  //Rcout << sampling_mu << arma::chol(sampling_sigma) << std::endl;
+  arma::vec lik1;
+
+  lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu.t(), inv_sampling_sigma);
+  lik1.replace(arma::datum::nan, 0);
+
+  arma::vec M0 = arma::vec(nsim);
+  arma::mat M1 = arma::mat(nsim, k);
+  //arma::cube M2 = arma::cube(k,k, nsim);
+
+  arma::mat Z2 = -Z1;
+  arma::mat Ap2 = arma::repmat(sampling_mu, nsim, 1) + Z2 * arma::chol(sampling_sigma);
+  arma::vec lik2;
+
+  lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap2, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu.t(), inv_sampling_sigma);
+  lik2.replace(arma::datum::nan, 0);
+
+  // lik_st initialized to ones in case lik1 is too small
+  arma::vec lik1_st = lik1 / mean(lik1);
+  lik1_st.replace(arma::datum::nan, 1);
+  // arma::vec lik1_st = arma::ones(nsim);
+  // if(mean(lik1) > 1e-10){
+  //   lik1_st = lik1 / mean(lik1);
+  // }
+  arma::vec lik2_st = lik2 / mean(lik2);
+  lik2_st.replace(arma::datum::nan, 1);
+  // arma::vec lik2_st = arma::ones(nsim);
+  // if(mean(lik2) > 1e-10){
+  //   lik2_st = lik2 / mean(lik2);
+  // }
+
+  M0 =  (lik1 + lik2) / 2;
   for(int i = 0;i < k; i++){
-    expected_m1[i] = mean(Ap.col(i) % lik_st);
-    for(int j = 0;j < k; j++){
-      expected_m2(i,j) = mean(Ap.col(i) % Ap.col(j) % lik_st);
-    }
+    M1.col(i) = (Ap1.col(i) % lik1_st + Ap2.col(i) % lik2_st) / 2;
+    // for(int j = 0;j < k; j++){
+    //   M2.tube(i,j) = (Ap1.col(i) % Ap1.col(j) % lik1_st + Ap2.col(i) % Ap2.col(j) % lik2_st) / 2;
+    // }
   }
-  return Rcpp::List::create(expected_m1, expected_m2);
+
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    //M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1);
 }
 
 //' @export
 // [[Rcpp::export]]
-arma::mat stepE(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  arma::mat A = arma::mat(n, K-1);
-  for(int i = 0; i < n; i++){
-    Rcpp::List moments = expectedA2(X.row(i).t(), mu, sigma, nsim);
-    arma::mat m1 = moments[0];
-    A.row(i) = m1.t();
-  }
-  return A;
-}
+Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z,
+                              bool antithetic_variates = true,
+                              bool importance_sampling_mu = true,
+                              bool moment_two = true){
 
-//' @export
-// [[Rcpp::export]]
-Rcpp::List stepEM1(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  arma::vec mu_next = arma::zeros(K-1);
-  arma::mat sigma_next = arma::zeros(K-1, K-1);
-  for(int i = 0; i < n; i++){
-    Rcpp::List moments = expectedA2(X.row(i).t(), mu, sigma, nsim);
-    arma::mat m1 = moments[0];
-    arma::mat m2 = moments[1];
-    mu_next += m1;
-    sigma_next += m2;
-  }
-  mu_next = mu_next / n;
-  sigma_next = sigma_next / n - mu_next * mu_next.t();
-  return Rcpp::List::create(mu_next, sigma_next);
-}
-
-//' @export
-// [[Rcpp::export]]
-Rcpp::List stepEM2(arma::mat A, arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  arma::vec mu_next = arma::zeros(K-1);
-  arma::mat sigma_next = arma::zeros(K-1, K-1);
-  for(int i = 0; i < n; i++){
-    Rcpp::List moments = expectedA4(A.row(i).t(), X.row(i).t(), mu, sigma, nsim);
-    arma::mat m1 = moments[0];
-    arma::mat m2 = moments[1];
-    mu_next += m1;
-    sigma_next += m2;
-  }
-  mu_next = mu_next / n;
-  sigma_next = sigma_next / n - mu_next * mu_next.t();
-  return Rcpp::List::create(mu_next, sigma_next);
-}
-
-//' @export
-// [[Rcpp::export]]
-Rcpp::List stepEM3(arma::mat X, arma::vec mu, arma::mat sigma, int nsim = 100){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  arma::vec mu_next = arma::zeros(K-1);
-  arma::mat sigma_next = arma::zeros(K-1, K-1);
-
-  arma::mat mu_x = arma::mat(K-1, n);
-  arma::cube sigma_x = arma::cube(K-1, K-1, n);
-  for(int i = 0; i < n; i++){
-    Rcpp::List moments = expectedA2(X.row(i).t(), mu, sigma, nsim);
-    arma::mat m1 = moments[0];
-    arma::mat m2 = moments[1];
-    mu_x.col(i) = m1;
-    sigma_x.slice(i) = m2 - m1 * m1.t();
-    mu_next += m1;
-    sigma_next += m2;
-  }
-  mu_next = mu_next / n;
-  sigma_next = sigma_next / n - mu_next * mu_next.t();
-  return Rcpp::List::create(mu_next, sigma_next, mu_x, sigma_x);
-}
-
-//' @export
-// [[Rcpp::export]]
-Rcpp::List stepEM4(arma::mat X, arma::vec mu, arma::mat sigma,
-                   arma::mat mu_x, arma::cube sigma_x, int nsim = 100){
-  int n = X.n_rows;
-  int K = X.n_cols;
-  arma::vec mu_next = arma::zeros(K-1);
-  arma::mat sigma_next = arma::zeros(K-1, K-1);
-
-  for(int i = 0; i < n; i++){
-    Rcpp::List moments = expectedA5(X.row(i).t(), mu, sigma,
-                                    mu_x.col(i), sigma_x.slice(i), nsim);
-    arma::mat m1 = moments[0];
-    arma::mat m2 = moments[1];
-    mu_x.col(i) = m1;
-    sigma_x.slice(i) = m2 - m1 * m1.t();
-    mu_next += m1;
-    sigma_next += m2;
-  }
-  mu_next = mu_next / n;
-  sigma_next = sigma_next / n - mu_next * mu_next.t();
-  return Rcpp::List::create(mu_next, sigma_next, mu_x, sigma_x);
-}
-
-
-// [[Rcpp::export]]
-double c_dnormalmultinomial(arma::vec x, arma::vec mu, arma::mat sigma, int nsim = 100){
   int K = x.size();
   int k = K - 1;
-  int nsim2 = 2 * nsim;
+  int nsim = Z.n_rows;
+  arma::vec x_noz = x.replace(0, 0.66);
 
-  arma::mat Z1 = arma::randn(nsim, k);
-  arma::mat Z2 = -Z1;
-  arma::mat Z = join_cols(Z1, Z2);
-  arma::mat Ap = arma::mat(nsim2, k);
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
   arma::mat inv_sigma = inv_sympd(sigma);
-  arma::vec mu0 = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
 
-  Ap = arma::repmat(mu0.t(), nsim2, 1) + Z * arma::chol(sigma);
+  arma::mat sampling_mu;
+  arma::mat sampling_sigma;
+  arma::mat inv_sampling_sigma;
 
-  arma::vec lik = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap, x) ) %
-  mvf_norm(Ap, mu, inv_sigma)  / mvf_norm(Ap, mu0, inv_sigma);
-  return mean(lik);
+  if(importance_sampling_mu){
+    sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66).t();
+    if( sampling_mu.has_nan() ){
+      sampling_mu = log( x_noz(arma::span(0,k-1),0) / x_noz(k,0)).t();
+    }
+  }else{
+    sampling_mu =  mu.t();
+  }
+  // Rcout << sampling_mu << std::endl;
+  sampling_sigma = sigma;
+  inv_sampling_sigma = inv_sigma;
+
+  arma::mat Z1 = Z;
+  arma::mat Ap1 = arma::repmat(sampling_mu, nsim, 1) + Z1 * arma::chol(sampling_sigma);
+  //Rcout << sampling_mu << arma::chol(sampling_sigma) << std::endl;
+  arma::vec lik1;
+  if(importance_sampling_mu){
+    lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu.t(), inv_sampling_sigma);
+  }else{
+    lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) );
+  }
+  lik1.replace(arma::datum::nan, 0);
+  arma::vec M0 = arma::vec(nsim);
+  arma::mat M1 = arma::mat(nsim, k);
+  arma::cube M2 = arma::cube(k,k, nsim);
+
+  if(antithetic_variates){
+    arma::mat Z2 = -Z1;
+    arma::mat Ap2 = arma::repmat(sampling_mu, nsim, 1) + Z2 * arma::chol(sampling_sigma);
+    arma::vec lik2;
+    if(importance_sampling_mu){
+      lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap2, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu.t(), inv_sampling_sigma);
+    }else{
+      lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) );
+    }
+    lik2.replace(arma::datum::nan, 0);
+    // lik_st initialized to ones in case lik1 is too small
+    arma::vec lik1_st = lik1 / mean(lik1);
+    lik1_st.replace(arma::datum::nan, 1);
+    // arma::vec lik1_st = arma::ones(nsim);
+    // if(mean(lik1) > 1e-10){
+    //   lik1_st = lik1 / mean(lik1);
+    // }
+    arma::vec lik2_st = lik2 / mean(lik2);
+    lik2_st.replace(arma::datum::nan, 1);
+    // arma::vec lik2_st = arma::ones(nsim);
+    // if(mean(lik2) > 1e-10){
+    //   lik2_st = lik2 / mean(lik2);
+    // }
+
+    M0 =  (lik1 + lik2) / 2;
+    for(int i = 0;i < k; i++){
+      M1.col(i) = (Ap1.col(i) % lik1_st + Ap2.col(i) % lik2_st) / 2;
+      for(int j = 0;j < k; j++){
+        M2.tube(i,j) = (Ap1.col(i) % Ap1.col(j) % lik1_st + Ap2.col(i) % Ap2.col(j) % lik2_st) / 2;
+      }
+    }
+  }else{
+    // lik_st initialized to ones in case lik1 is too small
+    arma::vec lik1_st = lik1 / mean(lik1);
+    lik1_st.replace(arma::datum::nan, 1);
+    // arma::vec lik1_st = arma::ones(nsim);
+    // if(mean(lik1) > 1e-10){
+    //   lik1_st = lik1 / mean(lik1);
+    // }
+    M0 =  lik1;
+    for(int i = 0;i < k; i++){
+      M1.col(i) = Ap1.col(i) % lik1_st;
+      for(int j = 0;j < k; j++){
+        M2.tube(i,j) = Ap1.col(i) % Ap1.col(j) % lik1_st;
+      }
+    }
+  }
+  // Rcout << M0 << M1 << M2 << std::endl;
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1, M2);
 }

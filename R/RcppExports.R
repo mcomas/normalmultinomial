@@ -42,118 +42,6 @@ ilr_coordinates_with_basis <- function(X, B) {
 }
 
 #' @export
-log_dnormal <- function(A, mu, inv_sigma) {
-    .Call('normalmultinomial_log_dnormal', PACKAGE = 'normalmultinomial', A, mu, inv_sigma)
-}
-
-#' @export
-dnormal <- function(A, mu, inv_sigma) {
-    .Call('normalmultinomial_dnormal', PACKAGE = 'normalmultinomial', A, mu, inv_sigma)
-}
-
-#' @export
-log_dmultinomial <- function(X, A) {
-    .Call('normalmultinomial_log_dmultinomial', PACKAGE = 'normalmultinomial', X, A)
-}
-
-#' @export
-dmultinomial <- function(X, A) {
-    .Call('normalmultinomial_dmultinomial', PACKAGE = 'normalmultinomial', X, A)
-}
-
-#' @export
-log_df_x_a <- function(X, A, mu, inv_sigma) {
-    .Call('normalmultinomial_log_df_x_a', PACKAGE = 'normalmultinomial', X, A, mu, inv_sigma)
-}
-
-#' @export
-df_x_a <- function(X, A, mu, inv_sigma) {
-    .Call('normalmultinomial_df_x_a', PACKAGE = 'normalmultinomial', X, A, mu, inv_sigma)
-}
-
-#' @export
-df_x_1 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_df_x_1', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-df_x_2 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_df_x_2', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-df_x_3 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_df_x_3', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-expected1 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expected1', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-expected2 <- function(X, mu, sigma, se_eps = 0.001) {
-    .Call('normalmultinomial_expected2', PACKAGE = 'normalmultinomial', X, mu, sigma, se_eps)
-}
-
-#' @export
-expected3 <- function(X, mu, sigma, se_eps = 0.001) {
-    .Call('normalmultinomial_expected3', PACKAGE = 'normalmultinomial', X, mu, sigma, se_eps)
-}
-
-#' @export
-expected4 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.0001) {
-    .Call('normalmultinomial_expected4', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
-}
-
-#' @export
-expected5 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
-    .Call('normalmultinomial_expected5', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
-}
-
-#' @export
-expected6 <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.001) {
-    .Call('normalmultinomial_expected6', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
-}
-
-#' @export
-expected_initial <- function(X, mu, sigma, se_eps = 0.05) {
-    .Call('normalmultinomial_expected_initial', PACKAGE = 'normalmultinomial', X, mu, sigma, se_eps)
-}
-
-#' @export
-expected_guided <- function(X, mu, sigma, mu_x, sigma_x, se_eps = 0.05) {
-    .Call('normalmultinomial_expected_guided', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, se_eps)
-}
-
-#' Finds the mean and covariance of a normal multinomial distribution
-#'
-#' @param X normal-multinomial sample
-#' @param nsim number of repetitions for the montecarlo integration process
-#' @param niter number of iterations for the EM-algorithm
-#' @param prop first 0 imputation
-#' @export
-normalmultinomial_fitting <- function(X, nsim = 100L, niter = 20L, prop = 0.66, version = 0L) {
-    .Call('normalmultinomial_normalmultinomial_fitting', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version)
-}
-
-#' @export
-nearestPSD <- function(x, eig_tol = 1e-06, maxit = 100L, conv_tol = 1e-07, posd_tol = 1e-03) {
-    .Call('normalmultinomial_nearestPSD', PACKAGE = 'normalmultinomial', x, eig_tol, maxit, conv_tol, posd_tol)
-}
-
-#' Finds the mean and covariance of a normal multinomial distribution
-#'
-#' @param X normal-multinomial sample
-#' @param nsim number of repetitions for the montecarlo integration process
-#' @param niter number of iterations for the EM-algorithm
-#' @param prop first 0 imputation
-#' @export
-nm_fit <- function(X, nsim = 100L, niter = 20L, prop = 0.66, version = 0L) {
-    .Call('normalmultinomial_nm_fit', PACKAGE = 'normalmultinomial', X, nsim, niter, prop, version)
-}
-
-#' @export
 mvf <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }
@@ -196,86 +84,17 @@ c_rnormalmultinomial <- function(mu, sigma, size, seed) {
 }
 
 #' @export
-expectedA1 <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA1', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA2 <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA2', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA5 <- function(x, mu, sigma, mu_x, sigma_x, nsim = 100L) {
-    .Call('normalmultinomial_expectedA5', PACKAGE = 'normalmultinomial', x, mu, sigma, mu_x, sigma_x, nsim)
-}
-
-#' @export
-stepE <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_stepE', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-stepEM1 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_stepEM1', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-stepEM2 <- function(A, X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_stepEM2', PACKAGE = 'normalmultinomial', A, X, mu, sigma, nsim)
-}
-
-#' @export
-stepEM3 <- function(X, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_stepEM3', PACKAGE = 'normalmultinomial', X, mu, sigma, nsim)
-}
-
-#' @export
-stepEM4 <- function(X, mu, sigma, mu_x, sigma_x, nsim = 100L) {
-    .Call('normalmultinomial_stepEM4', PACKAGE = 'normalmultinomial', X, mu, sigma, mu_x, sigma_x, nsim)
-}
-
-c_dnormalmultinomial <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_c_dnormalmultinomial', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA1_all <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA1_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA2_all <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA2_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA3_all <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA3_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA4_all <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA4_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedA5_all <- function(x, mu, sigma, nsim = 100L) {
-    .Call('normalmultinomial_expectedA5_all', PACKAGE = 'normalmultinomial', x, mu, sigma, nsim)
-}
-
-#' @export
-expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, nsim = 100L, antithetic_variates = TRUE, importance_sampling_mu = TRUE) {
-    .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, nsim, antithetic_variates, importance_sampling_mu)
-}
-
-#' @export
 expectedMetropolis <- function(x, mu_ilr, sigma_ilr, nsim = 100L) {
     .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, nsim)
 }
 
 #' @export
-expectedMonteCarloFixed <- function(x, mu_ilr, sigma_ilr, Z, antithetic_variates = TRUE, importance_sampling_mu = TRUE) {
-    .Call('normalmultinomial_expectedMonteCarloFixed', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu)
+expectedMoment1 <- function(x, mu_ilr, sigma_ilr, Z) {
+    .Call('normalmultinomial_expectedMoment1', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
+}
+
+#' @export
+expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, Z, antithetic_variates = TRUE, importance_sampling_mu = TRUE, moment_two = TRUE) {
+    .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu, moment_two)
 }
 
