@@ -3,6 +3,8 @@
 export(clr_coordinates)
 export(expectedMetropolis)
 export(expectedMoment1)
+export(expectedMoment2)
+export(expectedMoment2spherical)
 export(expectedMonteCarlo)
 export(hessian)
 export(ilr_basis)

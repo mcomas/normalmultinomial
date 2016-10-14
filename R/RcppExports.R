@@ -94,7 +94,17 @@ expectedMoment1 <- function(x, mu_ilr, sigma_ilr, Z) {
 }
 
 #' @export
-expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, Z, antithetic_variates = TRUE, importance_sampling_mu = TRUE, moment_two = TRUE) {
-    .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu, moment_two)
+expectedMoment2spherical <- function(x, mu_ilr, sigma_ilr, Z) {
+    .Call('normalmultinomial_expectedMoment2spherical', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
+}
+
+#' @export
+expectedMoment2 <- function(x, mu_ilr, sigma_ilr, Z) {
+    .Call('normalmultinomial_expectedMoment2', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
+}
+
+#' @export
+expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, Z) {
+    .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
 }
 

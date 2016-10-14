@@ -252,9 +252,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// expectedMonteCarlo
-Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, bool antithetic_variates, bool importance_sampling_mu, bool moment_two);
-RcppExport SEXP normalmultinomial_expectedMonteCarlo(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP antithetic_variatesSEXP, SEXP importance_sampling_muSEXP, SEXP moment_twoSEXP) {
+// expectedMoment2spherical
+Rcpp::List expectedMoment2spherical(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMoment2spherical(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -262,10 +262,35 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
-    Rcpp::traits::input_parameter< bool >::type antithetic_variates(antithetic_variatesSEXP);
-    Rcpp::traits::input_parameter< bool >::type importance_sampling_mu(importance_sampling_muSEXP);
-    Rcpp::traits::input_parameter< bool >::type moment_two(moment_twoSEXP);
-    __result = Rcpp::wrap(expectedMonteCarlo(x, mu_ilr, sigma_ilr, Z, antithetic_variates, importance_sampling_mu, moment_two));
+    __result = Rcpp::wrap(expectedMoment2spherical(x, mu_ilr, sigma_ilr, Z));
+    return __result;
+END_RCPP
+}
+// expectedMoment2
+Rcpp::List expectedMoment2(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMoment2(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    __result = Rcpp::wrap(expectedMoment2(x, mu_ilr, sigma_ilr, Z));
+    return __result;
+END_RCPP
+}
+// expectedMonteCarlo
+Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMonteCarlo(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    __result = Rcpp::wrap(expectedMonteCarlo(x, mu_ilr, sigma_ilr, Z));
     return __result;
 END_RCPP
 }
