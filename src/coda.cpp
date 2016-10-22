@@ -65,7 +65,6 @@ arma::mat ilr_to_alr(unsigned int dim){
   return(ILR_TO_ALR);
 }
 
-//' @export
 // [[Rcpp::export]]
 arma::mat clr_coordinates(arma::mat X){
   arma::mat LOGX = log(X);
@@ -77,7 +76,6 @@ arma::mat clr_coordinates(arma::mat X){
   return(LOGX);
 }
 
-//' @export
 // [[Rcpp::export]]
 arma::mat inv_clr_coordinates(arma::mat clrX){
   arma::mat X = arma::exp(clrX);
@@ -88,7 +86,6 @@ arma::mat inv_clr_coordinates(arma::mat clrX){
   return(X);
 }
 
-//' @export
 // [[Rcpp::export]]
 arma::mat ilr_coordinates(arma::mat X){
   arma::mat CLR = clr_coordinates(X);
@@ -97,7 +94,6 @@ arma::mat ilr_coordinates(arma::mat X){
   return(CLR * B);
 }
 
-//' @export
 // [[Rcpp::export]]
 arma::mat inv_ilr_coordinates(arma::mat ilrX){
   arma::mat B = ilr_basis(ilrX.n_cols + 1);
