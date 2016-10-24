@@ -11,19 +11,21 @@ ilr_coordinates = function(X){
     RAW = as.matrix(X)
   }
   ILR = .Call('normalmultinomial_ilr_coordinates', PACKAGE = 'normalmultinomial', RAW)
+  colnames(ILR) = paste0('ilr_',1:ncol(ILR))
+
   if(is_vector){
     ILR = ILR[1,]
     names(ILR) = paste0('ilr_',1:length(ILR))
-  }else{
+  }
+  if(is_data_frame){
     ILR = as.data.frame(ILR)
-    colnames(ILR) = paste0('ilr_',1:ncol(ILR))
   }
   class(ILR) = class_type
   ILR
 }
 
 #' @export
-inv_ilr_coordinates = function(X, components.name = paste0('c_', 1:(ncol(X)+1))){
+inv_ilr_coordinates = function(X, components.name = NULL){
   class_type = class(X)
   is_vector = is.vector(X)
   is_data_frame = is.data.frame(X)
@@ -35,12 +37,17 @@ inv_ilr_coordinates = function(X, components.name = paste0('c_', 1:(ncol(X)+1)))
     ILR = as.matrix(X)
   }
   RAW = .Call('normalmultinomial_inv_ilr_coordinates', PACKAGE = 'normalmultinomial', ILR)
+  if(is.null(components.name)){
+    components.name = paste0('c_', 1:(ncol(RAW)))
+  }
+  colnames(RAW) = components.name
+
   if(is_vector){
     RAW = RAW[1,]
     names(RAW) = components.name
-  }else{
+  }
+  if(is_data_frame){
     RAW = as.data.frame(RAW)
-    colnames(RAW) = components.name
   }
   class(RAW) = class_type
   RAW
@@ -65,12 +72,13 @@ clr_coordinates = function(X){
     components.name = paste0('c',1:ncol(RAW))
   }
   CLR = .Call('normalmultinomial_clr_coordinates', PACKAGE = 'normalmultinomial', RAW)
+  colnames(CLR) = paste0('clr_',components.name)
   if(is_vector){
     CLR = CLR[1,]
     names(CLR) = paste0('clr_',components.name)
-  }else{
+  }
+  if(is_data_frame){
     CLR = as.data.frame(CLR)
-    colnames(CLR) = paste0('clr_',components.name)
   }
   class(CLR) = class_type
   CLR
@@ -92,12 +100,14 @@ inv_clr_coordinates = function(X){
     components.name = names(X)
   }
   RAW = .Call('normalmultinomial_inv_clr_coordinates', PACKAGE = 'normalmultinomial', CLR)
+  colnames(RAW) = gsub('clr_','',components.name)
+
   if(is_vector){
     RAW = RAW[1,]
     names(RAW) = gsub('clr_','',components.name)
-  }else{
+  }
+  if(is_data_frame){
     RAW = as.data.frame(RAW)
-    colnames(RAW) = gsub('clr_','',components.name)
   }
   class(RAW) = class_type
   RAW

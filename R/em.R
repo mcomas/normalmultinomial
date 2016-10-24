@@ -1,33 +1,3 @@
-nm_fit_old = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                      max.em.iter = 100){
-  MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
-  SIGMA = sigma
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
-
-  err = eps + 1
-  iter = 0
-  while(err > eps & iter < max.em.iter){
-    if(!is.null(parallel.cluster)){
-      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMoment1, MU, SIGMA, Z)
-    }else{
-      FIT = apply(X, 1, expectedMoment1, MU, SIGMA, Z)
-    }
-    E = t(sapply(FIT, function(fit) apply(fit[[2]], 2, sum) / nsim))
-
-    delta = (apply(E, 2, mean)-MU)
-    err = sqrt(sum(delta^2))
-    MU = MU + delta
-    iter = iter + 1
-  }
-
-  list(mu = MU,
-       sigma = SIGMA,
-       iter = iter)
-}
 
 #' @export
 nm_fit_mean = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
@@ -119,7 +89,7 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
 
   err = eps + 1
   iter = 0
-  while(err > eps & iter < max.emiter){
+  while(err > eps & iter < max.em.iter){
     if(!is.null(parallel.cluster)){
       FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo, MU, SIGMA, Z)
     }else{
