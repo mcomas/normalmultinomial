@@ -100,9 +100,11 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
     MU = MU + delta
-    #SIGMA = Reduce(`+`, lapply(FIT, function(fit) apply(fit[[3]], 1:2, function(v) mean(na.omit(v), trim=0.001)))) / nrow(X) - MU %*% t(MU)
-    #SIGMA = (SIGMA + t(SIGMA))/2
-    SIGMA = Reduce(`+`, lapply(FIT, function(fit) apply(fit[[3]], 1:2, sum)/ nsim)) / nrow(X) - MU %*% t(MU)
+    L = lapply(FIT, function(fit){
+      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+      apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+    })
+    SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
     iter = iter + 1
   }
 
