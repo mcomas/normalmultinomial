@@ -119,6 +119,8 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
   MU = ilr_coordinates(colSums(X/rowSums(X)))
   SIGMA = sigma
 
+  MULTINOM_CONS = apply(X, 1, mvf_multinom_const)
+
   if(nrow(SIGMA) <= 6){
     Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
   }else{
@@ -129,9 +131,9 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
   iter = 0
   while(err > eps & iter < max.em.iter){
     if(!is.null(parallel.cluster)){
-      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo, MU, SIGMA, Z)
+      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z, MULTINOM_CONS)
     }else{
-      FIT = apply(X, 1, expectedMonteCarlo, MU, SIGMA, Z)
+      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z, MULTINOM_CONS)
     }
     E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
 
@@ -144,6 +146,7 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
     })
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
     iter = iter + 1
+    cat(sprintf('Step %d, error %f\n', iter, err))
   }
 
   list(mu = MU,

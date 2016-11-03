@@ -9,9 +9,9 @@ dnormalmultinomial(x, mu, sigma, nsim = 100)
 \arguments{
 \item{x}{counts}
 
-\item{mu}{mean parameter for the mean in the aln-normal distribution}
+\item{mu}{mean parameter for the logratio normal distribution in ilr coordinates}
 
-\item{sigma}{parameter for the sigma in the aln-normal distribution}
+\item{sigma}{covariance parameter parameter for the  logratio normal distribution in ilr coordinates}
 
 \item{nsim}{simulations done to calculate the integral}
 }

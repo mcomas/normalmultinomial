@@ -38,6 +38,8 @@ arma::vec mvf_norm(arma::mat A, arma::vec mu, arma::mat inv_sigma){
   return(exp(norm));
 }
 
+//' @export
+// [[Rcpp::export]]
 double mvf_multinom_const(arma::vec x){
   int K = x.size();
 
@@ -59,6 +61,7 @@ double mvf_multinom_const(arma::vec x){
   return(mult_const);
 }
 
+// [[Rcpp::export]]
 double mvf_multinom_mult(arma::vec a, arma::vec x){
   int k = a.size();
 

@@ -95,6 +95,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mvf_multinom_const
+double mvf_multinom_const(arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_multinom_const(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(mvf_multinom_const(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mvf_multinom_mult
+double mvf_multinom_mult(arma::vec a, arma::vec x);
+RcppExport SEXP normalmultinomial_mvf_multinom_mult(SEXP aSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type a(aSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(mvf_multinom_mult(a, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mvf
 double mvf(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x);
 RcppExport SEXP normalmultinomial_mvf(SEXP aSEXP, SEXP muSEXP, SEXP inv_sigmaSEXP, SEXP xSEXP) {
@@ -305,6 +328,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
     rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo(x, mu_ilr, sigma_ilr, Z));
+    return rcpp_result_gen;
+END_RCPP
+}
+// expectedMonteCarlo2
+Rcpp::List expectedMonteCarlo2(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMonteCarlo2(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo2(x, mu_ilr, sigma_ilr, Z));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -107,8 +107,8 @@ rnormalmultinomial <- function(n, size, mu, sigma, probs = FALSE) {
 #' Probability of a given count
 #'
 #' @param x counts
-#' @param mu mean parameter for the mean in the aln-normal distribution
-#' @param sigma parameter for the sigma in the aln-normal distribution
+#' @param mu mean parameter for the logratio normal distribution in ilr coordinates
+#' @param sigma covariance parameter parameter for the  logratio normal distribution in ilr coordinates
 #' @param nsim simulations done to calculate the integral
 #' @return probability
 #' @examples

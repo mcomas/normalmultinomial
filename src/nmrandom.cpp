@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 #include "nmrandom.h"
-
+#include "coda.h"
 // Enable C++11 via this plugin (Rcpp 0.10.3 or later)
 // [[Rcpp::plugins(cpp11)]]
 
@@ -39,7 +39,10 @@ arma::mat c_rmultinomial(arma::mat A, arma::vec size, int seed = 1) {
 List c_rnormalmultinomial(arma::vec mu, arma::mat sigma, arma::vec size, int seed){
   int n = size.n_elem;
   int k = mu.n_elem;
+  arma::mat ILR_TO_ALR = ilr_to_alr(k+1);
+  arma::vec mu_alr = ILR_TO_ALR * mu;
+  arma::mat sigma_alr = ILR_TO_ALR * sigma * ILR_TO_ALR.t();
   arma::mat A = arma::ones<arma::mat>(n, k+1);
-  A(arma::span::all, arma::span(0,k-1)) = exp(c_rnormal(n, mu, sigma));
+  A(arma::span::all, arma::span(0,k-1)) = exp(c_rnormal(n, mu_alr, sigma_alr));
   return(List::create(A, c_rmultinomial(A, size, seed)));
 }

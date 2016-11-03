@@ -38,6 +38,15 @@ ilr_coordinates_with_basis <- function(X, B) {
 }
 
 #' @export
+mvf_multinom_const <- function(x) {
+    .Call('normalmultinomial_mvf_multinom_const', PACKAGE = 'normalmultinomial', x)
+}
+
+mvf_multinom_mult <- function(a, x) {
+    .Call('normalmultinomial_mvf_multinom_mult', PACKAGE = 'normalmultinomial', a, x)
+}
+
+#' @export
 mvf <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }
@@ -107,5 +116,10 @@ expectedMoment2 <- function(x, mu_ilr, sigma_ilr, Z) {
 #' @export
 expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, Z) {
     .Call('normalmultinomial_expectedMonteCarlo', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
+}
+
+#' @export
+expectedMonteCarlo2 <- function(x, mu_ilr, sigma_ilr, Z) {
+    .Call('normalmultinomial_expectedMonteCarlo2', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
 }
 

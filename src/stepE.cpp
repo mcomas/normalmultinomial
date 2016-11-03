@@ -451,7 +451,15 @@ Rcpp::List expectedMonteCarlo2(arma::vec x, arma::vec mu_ilr, arma::mat sigma_il
   //Rcout << sampling_mu << arma::chol(sampling_sigma) << std::endl;
   arma::vec lik1;
 
-  lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu.t(), inv_sampling_sigma);
+  //Rcout << mu << sampling_mu << Ap1 << std::endl;
+  //Rcout << inv_sigma * (mu-sampling_mu.t()) << std::endl;
+
+  arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
+  arma::mat MU12 = arma::mat(Ap1.n_rows, 1);
+  MU12.fill(mu12(0,0));
+
+  lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) + Ap1 * inv_sigma * (mu-sampling_mu.t()) + MU12);
+
   lik1.replace(arma::datum::nan, 0);
   arma::vec M0 = arma::vec(nsim);
   arma::mat M1 = arma::mat(nsim, k);
@@ -462,7 +470,7 @@ Rcpp::List expectedMonteCarlo2(arma::vec x, arma::vec mu_ilr, arma::mat sigma_il
   arma::mat Ap2 = arma::repmat(sampling_mu, nsim, 1) + Z2 * arma::chol(sampling_sigma);
   arma::vec lik2;
 
-  lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap2, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu.t(), inv_sampling_sigma);
+  lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) + Ap2 * inv_sigma * (mu-sampling_mu.t()) + MU12);
   lik2.replace(arma::datum::nan, 0);
   // lik_st initialized to ones in case lik1 is too small
   arma::vec lik1_st = lik1 / mean(lik1);
