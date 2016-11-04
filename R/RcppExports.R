@@ -38,6 +38,11 @@ ilr_coordinates_with_basis <- function(X, B) {
 }
 
 #' @export
+ddirichletmultinomial <- function(x, alpha) {
+    .Call('normalmultinomial_ddirichletmultinomial', PACKAGE = 'normalmultinomial', x, alpha)
+}
+
+#' @export
 mvf_multinom_const <- function(x) {
     .Call('normalmultinomial_mvf_multinom_const', PACKAGE = 'normalmultinomial', x)
 }

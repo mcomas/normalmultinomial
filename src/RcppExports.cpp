@@ -95,6 +95,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ddirichletmultinomial
+double ddirichletmultinomial(arma::vec x, arma::vec alpha);
+RcppExport SEXP normalmultinomial_ddirichletmultinomial(SEXP xSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(ddirichletmultinomial(x, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mvf_multinom_const
 double mvf_multinom_const(arma::vec x);
 RcppExport SEXP normalmultinomial_mvf_multinom_const(SEXP xSEXP) {
