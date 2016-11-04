@@ -430,64 +430,191 @@ Rcpp::List expectedMonteCarlo2(arma::vec x, arma::vec mu_ilr, arma::mat sigma_il
 
   arma::vec mu = ILR_TO_ALR * mu_ilr;
   arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
-
   arma::mat inv_sigma = inv_sympd(sigma);
 
-  arma::mat sampling_mu;
-  arma::mat sampling_sigma;
-  arma::mat inv_sampling_sigma;
 
-  sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66).t();
+  arma::mat sampling_mu =  mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66).t();
   if( sampling_mu.has_nan() ){
     sampling_mu = log( x_noz(arma::span(0,k-1),0) / x_noz(k,0)).t();
   }
 
-  // Rcout << sampling_mu << std::endl;
-  sampling_sigma = sigma;
-  inv_sampling_sigma = inv_sigma;
+  arma::mat sampling_sigma = sigma;
+  arma::mat inv_sampling_sigma = inv_sigma;
+
+  arma::mat sampling_sigma_chol = arma::chol(sampling_sigma);
 
   arma::mat Z1 = Z;
-  arma::mat Ap1 = arma::repmat(sampling_mu, nsim, 1) + Z1 * arma::chol(sampling_sigma);
-  //Rcout << sampling_mu << arma::chol(sampling_sigma) << std::endl;
-  arma::vec lik1;
+  arma::mat Z2 = -Z1;
 
-  //Rcout << mu << sampling_mu << Ap1 << std::endl;
-  //Rcout << inv_sigma * (mu-sampling_mu.t()) << std::endl;
+  arma::mat SAMPLING_MU = arma::repmat(sampling_mu, nsim, 1);
+  arma::mat Ap1 = SAMPLING_MU + Z1 * sampling_sigma_chol;
+  arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
 
   arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
-  arma::mat MU12 = arma::mat(Ap1.n_rows, 1);
-  MU12.fill(mu12(0,0));
+  double mult_const = mvf_multinom_const(x);
+  arma::mat D = inv_sigma * (mu-sampling_mu.t());
 
-  lik1 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap1, x) + Ap1 * inv_sigma * (mu-sampling_mu.t()) + MU12);
-
+  arma::vec lik1 = exp( mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D);
   lik1.replace(arma::datum::nan, 0);
+  arma::vec lik2 = exp( mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D);
+  lik2.replace(arma::datum::nan, 0);
+
+  // lik_st initialized to ones in case lik1 is too small
+  arma::vec lik1_st = lik1 / mean(lik1);
+  lik1_st.replace(arma::datum::nan, 1);
+  arma::vec lik2_st = lik2 / mean(lik2);
+  lik2_st.replace(arma::datum::nan, 1);
+
+
   arma::vec M0 = arma::vec(nsim);
   arma::mat M1 = arma::mat(nsim, k);
   arma::cube M2 = arma::cube(k,k, nsim);
 
-
-  arma::mat Z2 = -Z1;
-  arma::mat Ap2 = arma::repmat(sampling_mu, nsim, 1) + Z2 * arma::chol(sampling_sigma);
-  arma::vec lik2;
-
-  lik2 = exp( mvf_multinom_const(x) + mvf_multinom_mult(Ap2, x) + Ap2 * inv_sigma * (mu-sampling_mu.t()) + MU12);
-  lik2.replace(arma::datum::nan, 0);
-  // lik_st initialized to ones in case lik1 is too small
-  arma::vec lik1_st = lik1 / mean(lik1);
-  lik1_st.replace(arma::datum::nan, 1);
-
-  arma::vec lik2_st = lik2 / mean(lik2);
-  lik2_st.replace(arma::datum::nan, 1);
-
   M0 =  (lik1 + lik2) / 2;
   for(int i = 0;i < k; i++){
-    M1.col(i) = (Ap1.col(i) % lik1_st + Ap2.col(i) % lik2_st) / 2;
+    arma::mat C1 = Ap1.col(i) % lik1_st;
+    arma::mat C2 = Ap2.col(i) % lik2_st;
+    M1.col(i) = (C1 + C2) / 2;
     for(int j = 0;j < k; j++){
-      M2.tube(i,j) = (Ap1.col(i) % Ap1.col(j) % lik1_st + Ap2.col(i) % Ap2.col(j) % lik2_st) / 2;
+      M2.tube(i,j) = (C1 % Ap1.col(j) + C2 % Ap2.col(j)) / 2;
     }
   }
 
-  // Rcout << M0 << M1 << M2 << std::endl;
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1, M2);
+}
+
+//' @export
+// [[Rcpp::export]]
+Rcpp::List expectedMonteCarlo3(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp){
+
+  int K = x.size();
+  int k = K - 1;
+  int nsim = Z.n_rows;
+  arma::vec x_noz = x.replace(0, 0.66);
+
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
+  arma::mat inv_sigma = inv_sympd(sigma);
+
+  arma::mat sampling_mu =  (ILR_TO_ALR * mu_exp).t();
+
+  arma::mat sampling_sigma = sigma;
+  arma::mat inv_sampling_sigma = inv_sigma;
+
+  arma::mat sampling_sigma_chol = arma::chol(sampling_sigma);
+
+  arma::mat Z1 = Z;
+  arma::mat Z2 = -Z1;
+
+  arma::mat SAMPLING_MU = arma::repmat(sampling_mu, nsim, 1);
+  arma::mat Ap1 = SAMPLING_MU + Z1 * sampling_sigma_chol;
+  arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
+
+  arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
+  double mult_const = mvf_multinom_const(x);
+  arma::mat D = inv_sigma * (mu-sampling_mu.t());
+
+  arma::vec lik1 = exp( mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D);
+  lik1.replace(arma::datum::nan, 0);
+  arma::vec lik2 = exp( mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D);
+  lik2.replace(arma::datum::nan, 0);
+
+  // lik_st initialized to ones in case lik1 is too small
+  arma::vec lik1_st = lik1 / mean(lik1);
+  lik1_st.replace(arma::datum::nan, 1);
+  arma::vec lik2_st = lik2 / mean(lik2);
+  lik2_st.replace(arma::datum::nan, 1);
+
+
+  arma::vec M0 = arma::vec(nsim);
+  arma::mat M1 = arma::mat(nsim, k);
+  arma::cube M2 = arma::cube(k,k, nsim);
+
+  M0 =  (lik1 + lik2) / 2;
+  for(int i = 0;i < k; i++){
+    arma::mat C1 = Ap1.col(i) % lik1_st;
+    arma::mat C2 = Ap2.col(i) % lik2_st;
+    M1.col(i) = (C1 + C2) / 2;
+    for(int j = 0;j < k; j++){
+      M2.tube(i,j) = (C1 % Ap1.col(j) + C2 % Ap2.col(j)) / 2;
+    }
+  }
+
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1, M2);
+}
+
+//' @export
+// [[Rcpp::export]]
+Rcpp::List expectedMonteCarlo4(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z,
+                               arma::vec mu_exp, arma::mat sigma_exp){
+
+  int K = x.size();
+  int k = K - 1;
+  int nsim = Z.n_rows;
+  arma::vec x_noz = x.replace(0, 0.66);
+
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
+  arma::mat inv_sigma = inv_sympd(sigma);
+
+  arma::mat sampling_mu =  (ILR_TO_ALR * mu_exp).t();
+
+  arma::mat sampling_sigma = ILR_TO_ALR * sigma_exp * ILR_TO_ALR.t();
+  arma::mat inv_sampling_sigma = inv_sympd(sampling_sigma);
+
+  arma::mat sampling_sigma_chol = arma::chol(sampling_sigma);
+
+  arma::mat Z1 = Z;
+  arma::mat Z2 = -Z1;
+
+  arma::mat SAMPLING_MU = arma::repmat(sampling_mu, nsim, 1);
+  arma::mat Ap1 = SAMPLING_MU + Z1 * sampling_sigma_chol;
+  arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
+
+  double mult_const = mvf_multinom_const(x);
+
+  arma::vec lik1 = exp( mult_const + mvf_multinom_mult(Ap1, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap1, sampling_mu.t(), inv_sampling_sigma);
+  lik1.replace(arma::datum::nan, 0);
+  arma::vec lik2 = exp( mult_const + mvf_multinom_mult(Ap2, x) ) % mvf_norm(Ap1, mu, inv_sigma)  / mvf_norm(Ap2, sampling_mu.t(), inv_sampling_sigma);
+  lik2.replace(arma::datum::nan, 0);
+
+  // lik_st initialized to ones in case lik1 is too small
+  arma::vec lik1_st = lik1 / mean(lik1);
+  lik1_st.replace(arma::datum::nan, 1);
+  arma::vec lik2_st = lik2 / mean(lik2);
+  lik2_st.replace(arma::datum::nan, 1);
+
+
+  arma::vec M0 = arma::vec(nsim);
+  arma::mat M1 = arma::mat(nsim, k);
+  arma::cube M2 = arma::cube(k,k, nsim);
+
+  M0 =  (lik1 + lik2) / 2;
+  for(int i = 0;i < k; i++){
+    arma::mat C1 = Ap1.col(i) % lik1_st;
+    arma::mat C2 = Ap2.col(i) % lik2_st;
+    M1.col(i) = (C1 + C2) / 2;
+    for(int j = 0;j < k; j++){
+      M2.tube(i,j) = (C1 % Ap1.col(j) + C2 % Ap2.col(j)) / 2;
+    }
+  }
+
   for(int s=0; s<nsim;s++){
     M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
     M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;

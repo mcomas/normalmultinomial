@@ -123,3 +123,13 @@ expectedMonteCarlo2 <- function(x, mu_ilr, sigma_ilr, Z) {
     .Call('normalmultinomial_expectedMonteCarlo2', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
 }
 
+#' @export
+expectedMonteCarlo3 <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
+    .Call('normalmultinomial_expectedMonteCarlo3', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp)
+}
+
+#' @export
+expectedMonteCarlo4 <- function(x, mu_ilr, sigma_ilr, Z, mu_exp, sigma_exp) {
+    .Call('normalmultinomial_expectedMonteCarlo4', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp, sigma_exp)
+}
+

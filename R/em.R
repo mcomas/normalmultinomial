@@ -77,7 +77,7 @@ nm_fit_spherical = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000
 
 #' @export
 nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                  max.em.iter = 100){
+                  max.em.iter = 100, verbose = FALSE){
   MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
   SIGMA = sigma
 
@@ -91,9 +91,9 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
   iter = 0
   while(err > eps & iter < max.em.iter){
     if(!is.null(parallel.cluster)){
-      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo, MU, SIGMA, Z)
+      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
     }else{
-      FIT = apply(X, 1, expectedMonteCarlo, MU, SIGMA, Z)
+      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
     }
     E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
 
@@ -106,6 +106,7 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
     })
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
     iter = iter + 1
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
   }
 
   list(mu = MU,
@@ -113,9 +114,9 @@ nm_fit = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel
        iter = iter)
 }
 
-#' @export
+
 nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                  max.em.iter = 100){
+                  max.em.iter = 100, verbose = FALSE){
   MU = ilr_coordinates(colSums(X/rowSums(X)))
   SIGMA = sigma
 
@@ -127,13 +128,22 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
     Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
   }
 
+  if(!is.null(parallel.cluster)){
+    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }else{
+    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }
+  E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+
   err = eps + 1
   iter = 0
   while(err > eps & iter < max.em.iter){
     if(!is.null(parallel.cluster)){
-      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z, MULTINOM_CONS)
+      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
+                                function(i)
+                                  expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
     }else{
-      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z, MULTINOM_CONS)
+      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
     }
     E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
 
@@ -146,13 +156,68 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
     })
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
     iter = iter + 1
-    cat(sprintf('Step %d, error %f\n', iter, err))
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
   }
 
   list(mu = MU,
        sigma = SIGMA,
        iter = iter)
 }
+
+
+nm_fit3 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
+                   max.em.iter = 100, verbose = FALSE){
+  MU = ilr_coordinates(colSums(X/rowSums(X)))
+  SIGMA = sigma
+
+  MULTINOM_CONS = apply(X, 1, mvf_multinom_const)
+
+  if(nrow(SIGMA) <= 6){
+    Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }else{
+    Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }
+
+  if(!is.null(parallel.cluster)){
+    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }else{
+    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }
+  E1 = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+  E2 = sapply(FIT, function(fit) margin.table(fit[[3]], 1:2)/nsim, simplify = FALSE)
+
+  err = eps + 1
+  iter = 0
+  while(err > eps & iter < max.em.iter){
+    if(!is.null(parallel.cluster)){
+      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
+                                function(i)
+                                  expectedMonteCarlo4(X[i,], MU, SIGMA, Z, E1[i,], diag(mean(diag(E2[[i]] - E1[i,] %*% t(E1[i,])), na.rm =T), ncol(E1))), simplify = FALSE)
+    }else{
+      FIT = sapply(1:nrow(X),
+                   function(i)
+                     expectedMonteCarlo4(X[i,], MU, SIGMA, Z, E1[i,], diag(mean(diag(E2[[i]] - E1[i,] %*% t(E1[i,])), na.rm =T), ncol(E1))), simplify = FALSE)
+    }
+    E1 = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E2 = sapply(FIT, function(fit) margin.table(fit[[3]], 1:2)/nsim, simplify = FALSE)
+
+    delta = (apply(E1, 2, mean)-MU)
+    err = sqrt(sum(delta^2))
+    MU = MU + delta
+    L = lapply(FIT, function(fit){
+      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+      apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+    })
+    SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
+    iter = iter + 1
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+  }
+
+  list(mu = MU,
+       sigma = SIGMA,
+       iter = iter)
+}
+
 
 #' @export
 nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
