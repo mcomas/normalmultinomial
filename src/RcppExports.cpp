@@ -95,15 +95,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ddirichletmultinomial
-double ddirichletmultinomial(arma::vec x, arma::vec alpha);
-RcppExport SEXP normalmultinomial_ddirichletmultinomial(SEXP xSEXP, SEXP alphaSEXP) {
+// ddirmult
+double ddirmult(arma::vec x, arma::vec alpha);
+RcppExport SEXP normalmultinomial_ddirmult(SEXP xSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(ddirichletmultinomial(x, alpha));
+    rcpp_result_gen = Rcpp::wrap(ddirmult(x, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dm_iter
+arma::vec dm_iter(arma::mat X, arma::vec alpha);
+RcppExport SEXP normalmultinomial_dm_iter(SEXP XSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(dm_iter(X, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_dm_fit
+Rcpp::List c_dm_fit(arma::mat X, double eps, int maxiter);
+RcppExport SEXP normalmultinomial_c_dm_fit(SEXP XSEXP, SEXP epsSEXP, SEXP maxiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_dm_fit(X, eps, maxiter));
     return rcpp_result_gen;
 END_RCPP
 }
