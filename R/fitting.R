@@ -1,3 +1,17 @@
+#'
+#' Log-ratio normal-multinomial parameters estimation. The parameters mu and sigma are expressed with respect
+#' basis given by function @ilrBase.
+#'
+#' @param X count data set
+#' @param eps maximum error accepted on the last EM-step
+#' @param nsim number of simulations used in the E-step
+#' @param parallel.cluster parallel Socket Cluster created with function @makeCluster
+#' @param max.em.iter maximum number of steps allowed in the EM-algorithm
+#' @param verbose show information during estimation
+#' @return A list with parameters mu and sigma and the number of iterations before convergence
+#' @examples
+#' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
+#' nm_fit(X, verbose = T)
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   max.em.iter = 100, verbose = FALSE){
@@ -38,6 +52,20 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
        iter = iter)
 }
 
+#'
+#' Calculate the expected probabilities P to generate the dataset X conditioned on parameters
+#' mu and sigma
+#' @param X count data set
+#' @param mu paramater mu
+#' @param sigma parameter sigma
+#' @param nsim number of simulation used to calculated the expected values
+#' @param parallel.cluster instance of a Socket Cluster (see function makeCluster from package parallel)
+#' @return the expected probabilities
+#' @examples
+#' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
+#' fit = nm_fit(X, verbose = T)
+#' P = nm_expected(X, fit$mu, fit$sigma)
+#' head(P)
 #' @export
 nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
   if(nrow(sigma) <= 6){
@@ -53,6 +81,17 @@ nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
   inv_ilr_coordinates(t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]])))))
 }
 
+#'
+#' Dirichlet-multinomial parameter estimation.
+#'
+#' @param X count data set
+#' @param eps maximum error accepted for alpha parameters
+#' @param max.iter maximum number of steps allowed
+#' @return A list with parameter alpha and the number of iterations before convergence
+#' @examples
+#' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
+#' dm_fit(X)
+#' @export
 #' @export
 dm_fit = function(X, eps = 10e-5, max.iter = 5000, verbose = FALSE){
   res = c_dm_fit(X, eps, max.iter)
@@ -61,6 +100,18 @@ dm_fit = function(X, eps = 10e-5, max.iter = 5000, verbose = FALSE){
   res
 }
 
+#'
+#' Calculate the expected probabilities P to generate the dataset X conditioned on parameters
+#' alpha
+#' @param X count data set
+#' @param alpha paramater alpha
+#' @return the expected probabilities
+#' @examples
+#' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
+#' fit = dm_fit(X, verbose = T)
+#' P = dm_expected(X, fit$alpha)
+#' head(P)
+#' @export
 #' @export
 dm_expected = function(X, alpha){
   X = t(alpha+t(X))

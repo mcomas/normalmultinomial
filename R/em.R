@@ -2,7 +2,6 @@
 
 ###################################
 ### OTHER FUNCTIONS
-#' @export
 nm_fit_mean = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                        max.em.iter = 100){
   D = ncol(X)
@@ -41,7 +40,6 @@ nm_fit_mean = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, par
        iter = iter)
 }
 
-#' @export
 nm_fit_spherical = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                             max.em.iter = 100){
   D = ncol(X)
