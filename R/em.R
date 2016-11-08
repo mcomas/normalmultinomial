@@ -26,7 +26,7 @@ nm_fit_mean = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, par
     }else{
       FIT = apply(X, 1, expectedMoment1_alr, MU, SIGMA, Z)
     }
-    E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
     MU.new = apply(E, 2, mean)
     delta = (MU.new %*% inv.ILR.TO.ILR - MU %*% inv.ILR.TO.ILR)
@@ -61,7 +61,7 @@ nm_fit_spherical = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000
     }else{
       FIT = apply(X, 1, expectedMonteCarlo, MU, SIGMA, Z)
     }
-    E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
@@ -96,7 +96,7 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
   }else{
     FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
   }
-  E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+  E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
   err = eps + 1
   iter = 0
@@ -108,7 +108,7 @@ nm_fit2 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
     }else{
       FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
     }
-    E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
@@ -146,7 +146,7 @@ nm_fit3 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
   }else{
     FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
   }
-  E1 = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+  E1 = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
   E2 = sapply(FIT, function(fit) margin.table(fit[[3]], 1:2)/nsim, simplify = FALSE)
 
   err = eps + 1
@@ -161,7 +161,7 @@ nm_fit3 = function(X, sigma = diag(ncol(X)-1), eps = 0.001, nsim = 1000, paralle
                    function(i)
                      expectedMonteCarlo4(X[i,], MU, SIGMA, Z, E1[i,], diag(mean(diag(E2[[i]] - E1[i,] %*% t(E1[i,])), na.rm =T), ncol(E1))), simplify = FALSE)
     }
-    E1 = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E1 = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
     E2 = sapply(FIT, function(fit) margin.table(fit[[3]], 1:2)/nsim, simplify = FALSE)
 
     delta = (apply(E1, 2, mean)-MU)

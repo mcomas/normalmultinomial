@@ -33,7 +33,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     }else{
       FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
     }
-    E = t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]]))))
+    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
@@ -78,7 +78,7 @@ nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
   }else{
     FIT = apply(X, 1, expectedMoment1, mu, sigma, Z)
   }
-  inv_ilr_coordinates(t(sapply(FIT, function(fit) colMeans(na.omit(fit[[2]])))))
+  inv_ilr_coordinates(t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]])))))
 }
 
 #'
@@ -93,7 +93,7 @@ nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
 #' dm_fit(X)
 #' @export
 #' @export
-dm_fit = function(X, eps = 10e-5, max.iter = 5000, verbose = FALSE){
+dm_fit = function(X, eps = 10e-5, max.iter = 5000){
   res = c_dm_fit(X, eps, max.iter)
   res[[1]] = as.numeric(res[[1]])
   names(res) = c('alpha', 'iter')
@@ -108,7 +108,7 @@ dm_fit = function(X, eps = 10e-5, max.iter = 5000, verbose = FALSE){
 #' @return the expected probabilities
 #' @examples
 #' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
-#' fit = dm_fit(X, verbose = T)
+#' fit = dm_fit(X)
 #' P = dm_expected(X, fit$alpha)
 #' head(P)
 #' @export

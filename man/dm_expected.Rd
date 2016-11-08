@@ -21,7 +21,7 @@ alpha
 }
 \examples{
 X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
-fit = dm_fit(X, verbose = T)
+fit = dm_fit(X)
 P = dm_expected(X, fit$alpha)
 head(P)
 }

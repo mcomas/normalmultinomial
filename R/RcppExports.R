@@ -50,7 +50,6 @@ c_dm_fit <- function(X, eps = 0.0001, maxiter = 5000L) {
     .Call('normalmultinomial_c_dm_fit', PACKAGE = 'normalmultinomial', X, eps, maxiter)
 }
 
-#' @export
 mvf_multinom_const <- function(x) {
     .Call('normalmultinomial_mvf_multinom_const', PACKAGE = 'normalmultinomial', x)
 }
@@ -59,32 +58,26 @@ mvf_multinom_mult <- function(a, x) {
     .Call('normalmultinomial_mvf_multinom_mult', PACKAGE = 'normalmultinomial', a, x)
 }
 
-#' @export
 mvf <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }
 
-#' @export
 mvf_deriv <- function(I, a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf_deriv', PACKAGE = 'normalmultinomial', I, a, mu, inv_sigma, x)
 }
 
-#' @export
 mvf_deriv2 <- function(I, J, a, mu, inv_sigma, x) {
     .Call('normalmultinomial_mvf_deriv2', PACKAGE = 'normalmultinomial', I, J, a, mu, inv_sigma, x)
 }
 
-#' @export
 logLike <- function(X, A, mu, inv_sigma) {
     .Call('normalmultinomial_logLike', PACKAGE = 'normalmultinomial', X, A, mu, inv_sigma)
 }
 
-#' @export
 hessian <- function(a, mu, inv_sigma, x) {
     .Call('normalmultinomial_hessian', PACKAGE = 'normalmultinomial', a, mu, inv_sigma, x)
 }
 
-#' @export
 mvf_maximum <- function(x, mu, inv_sigma, eps, max_iter, prop) {
     .Call('normalmultinomial_mvf_maximum', PACKAGE = 'normalmultinomial', x, mu, inv_sigma, eps, max_iter, prop)
 }

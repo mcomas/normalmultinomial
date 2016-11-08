@@ -4,7 +4,7 @@
 \alias{dm_fit}
 \title{Dirichlet-multinomial parameter estimation.}
 \usage{
-dm_fit(X, eps = 1e-04, max.iter = 5000, verbose = FALSE)
+dm_fit(X, eps = 1e-04, max.iter = 5000)
 }
 \arguments{
 \item{X}{count data set}
