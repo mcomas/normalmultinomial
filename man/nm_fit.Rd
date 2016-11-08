@@ -2,11 +2,10 @@
 % Please edit documentation in R/fitting.R
 \name{nm_fit}
 \alias{nm_fit}
-\title{Log-ratio normal-multinomial parameters estimation. The parameters mu and sigma are expressed with respect
-basis given by function @ilrBase.}
+\title{Log-ratio normal-multinomial parameters estimation.}
 \usage{
 nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-  max.em.iter = 100, verbose = FALSE)
+  max.em.iter = 100, expected = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{X}{count data set}
@@ -19,13 +18,15 @@ nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 
 \item{max.em.iter}{maximum number of steps allowed in the EM-algorithm}
 
+\item{expected}{if TRUE the expected probabilities are returned (default:TRUE)}
+
 \item{verbose}{show information during estimation}
 }
 \value{
 A list with parameters mu and sigma and the number of iterations before convergence
 }
 \description{
-Log-ratio normal-multinomial parameters estimation. The parameters mu and sigma are expressed with respect
+The parameters mu and sigma are expressed with respect
 basis given by function @ilrBase.
 }
 \examples{

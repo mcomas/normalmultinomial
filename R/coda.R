@@ -1,3 +1,15 @@
+#'
+#' ilr coordinates
+#'
+#' Calculate the ilr coordinates with respect basis given by function
+#' ilr_basis
+#'
+#' @param X compositional dataset. Either a matrix, a data.frame or a vector
+#' @return coordinates with respect basis ilr_basis
+#' @examples
+#' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
+#' nm_fit(X, verbose = T)
+#' @export
 #' @export
 ilr_coordinates = function(X){
   class_type = class(X)

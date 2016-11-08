@@ -14,13 +14,13 @@ X = as.matrix(comp.pos)
 
 ## Repl using normal-multinomial
 set.seed(1)
-fit = nm_fit(X)
-P.nm <- nm_expected(X, fit$mu, fit$sigma)
+fit = nm_fit(X, verbose = T)
+P.nm <- fit$expected
 colnames(P.nm) = colnames(X)
 
 ## Repl using dirichlet-multinomial
 fit.dm = dm_fit(X)
-P.dm <- dm_expected(X, fit.dm$alpha)
+P.dm <- fit.dm$expected
 colnames(P.dm) = colnames(X)
 
 ## Repl using GBM

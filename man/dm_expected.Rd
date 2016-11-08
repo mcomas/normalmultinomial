@@ -2,8 +2,7 @@
 % Please edit documentation in R/fitting.R
 \name{dm_expected}
 \alias{dm_expected}
-\title{Calculate the expected probabilities P to generate the dataset X conditioned on parameters
-alpha}
+\title{Calculate the expected probabilities}
 \usage{
 dm_expected(X, alpha)
 }
@@ -16,8 +15,8 @@ dm_expected(X, alpha)
 the expected probabilities
 }
 \description{
-Calculate the expected probabilities P to generate the dataset X conditioned on parameters
-alpha
+Calculate the probabilities conditioned on parameters alpha
+more likely to generate dataset X
 }
 \examples{
 X = rnormalmultinomial(100, 100, rep(0,4), diag(4))

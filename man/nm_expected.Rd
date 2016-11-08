@@ -2,8 +2,7 @@
 % Please edit documentation in R/fitting.R
 \name{nm_expected}
 \alias{nm_expected}
-\title{Calculate the expected probabilities P to generate the dataset X conditioned on parameters
-mu and sigma}
+\title{Calculate the expected probabilities}
 \usage{
 nm_expected(X, mu, sigma, nsim = 1000, parallel.cluster = NULL)
 }
@@ -22,8 +21,8 @@ nm_expected(X, mu, sigma, nsim = 1000, parallel.cluster = NULL)
 the expected probabilities
 }
 \description{
-Calculate the expected probabilities P to generate the dataset X conditioned on parameters
-mu and sigma
+Calculate the probabilities conditioned on parameters mu and sigma
+more likely to generate dataset X
 }
 \examples{
 X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
