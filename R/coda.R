@@ -17,6 +17,7 @@ ilr_coordinates = function(X){
   is_data_frame = is.data.frame(X)
   RAW = X
   if(is_vector){
+    class_type = 'double'
     RAW = matrix(X, nrow=1)
   }
   if(is_data_frame){

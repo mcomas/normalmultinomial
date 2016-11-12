@@ -19,6 +19,10 @@
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   max.em.iter = 100, expected = TRUE, verbose = FALSE){
 
+  if(ncol(X) == 2){
+    return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
+  }
+
   MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
   SIGMA = diag(ncol(X)-1)
 
@@ -78,6 +82,67 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
          sigma = SIGMA,
          iter = iter,
          expected = inv_ilr_coordinates(E))
+  }else{
+    list(mu = MU,
+         sigma = SIGMA,
+         iter = iter)
+  }
+}
+#
+#
+#
+nm_fit_1d = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
+                  max.em.iter = 100, expected = TRUE, verbose = FALSE){
+
+  MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
+  SIGMA = diag(1)
+
+  Z = matrix(randtoolbox::halton(50, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
+
+  if(!is.null(parallel.cluster)){
+    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }else{
+    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }
+  E = sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]])))
+  ##
+  ## The
+  Z = matrix(randtoolbox::halton(nsim, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
+
+  err_prev = err = eps + 1
+  iter = 0
+  while(err > eps & iter < max.em.iter){
+    if(!is.null(parallel.cluster)){
+      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
+                                function(i)
+                                  expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+    }else{
+      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i]), simplify = FALSE)
+    }
+    E = sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]])))
+
+    delta = (mean(E)-MU)
+    err = sqrt(sum(delta^2))
+    if(err_prev < err){
+      if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
+      nsim = 2 * nsim
+      Z = matrix(randtoolbox::halton(nsim, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
+    }
+    err_prev = err
+    MU = MU + delta
+    L = sapply(FIT, function(fit){
+      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+      mean(fit[[3]][,,sel])
+    })
+    SIGMA = matrix(mean(L) - MU * MU)
+    iter = iter + 1
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+  }
+  if(expected){
+    list(mu = MU,
+         sigma = SIGMA,
+         iter = iter,
+         expected = inv_ilr_coordinates(matrix(E, ncol=1)))
   }else{
     list(mu = MU,
          sigma = SIGMA,
