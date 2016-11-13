@@ -5,6 +5,7 @@
 \alias{parlament2015}
 \title{Results for parliament catalan elections by municipality and municipality variables}
 \format{A data frame with 947 rows and 34 variables:
+\describe{
 \item{code}{Municipality code}
 \item{name}{Munipality name}
 \item{jxsi}{Votes to Juns pel Si}
@@ -38,7 +39,8 @@
 \item{pop.w.65_84}{Female population from 65 to 84 years old}
 \item{pop.w.85}{Female population from 85 years old}
 \item{lon}{Longitude coordinates}
-\item{lat}{Latitude coordinates}}
+\item{lat}{Latitude coordinates}
+}}
 \source{
 \url{http://www.idescat.cat/pub/?id=elepc} \url{http://www.idescat.cat/emex/}
 }
