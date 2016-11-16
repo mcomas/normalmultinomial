@@ -33,10 +33,11 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   }
   if(!is.null(parallel.cluster)){
     FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    E = t(parallel::parSapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
   }else{
     FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
   }
-  E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
   ##
   ## The
   if(nrow(SIGMA) <= 6){
@@ -51,13 +52,24 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
                                   expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(parallel::parSapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      L = parallel::parLapply(parallel.cluster, FIT, function(fit){
+        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      })
     }else{
       FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      L = lapply(FIT, function(fit){
+        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      })
     }
-    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+
 
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
+
     if(err_prev < err){
       if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
@@ -68,12 +80,10 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       }
     }
     err_prev = err
+
     MU = MU + delta
-    L = lapply(FIT, function(fit){
-      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-      apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
-    })
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
+
     iter = iter + 1
     if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
   }
@@ -88,7 +98,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
          iter = iter)
   }
 }
-#
+
 #
 #
 nm_fit_1d = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
