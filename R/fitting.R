@@ -33,7 +33,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   }
   if(!is.null(parallel.cluster)){
     FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-    E = t(parallel::parSapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+    E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
   }else{
     FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
     E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
@@ -52,7 +52,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
                                   expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-      E = t(parallel::parSapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
       L = parallel::parLapply(parallel.cluster, FIT, function(fit){
         sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
         apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
