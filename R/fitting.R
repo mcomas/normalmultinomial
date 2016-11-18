@@ -1,3 +1,11 @@
+generate_mv_normal_rnd = function(n, dim){
+  if(dim <= 6){
+    Z = matrix(randtoolbox::halton(n, dim = dim, normal = TRUE), ncol=dim)
+  }else{
+    Z = matrix(randtoolbox::sobol(n, dim = dim, normal = TRUE), ncol=dim)
+  }
+  return(Z)
+}
 #'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
@@ -23,28 +31,16 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
-  SIGMA = diag(ncol(X)-1)
+  E = dm_fit(X)$expected
+  H = ilr_coordinates(E)
 
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(50, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(50, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
-  if(!is.null(parallel.cluster)){
-    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-    E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
-  }else{
-    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
-  }
+  MU = colMeans(H)
+  SIGMA = cov(H)
+
   ##
-  ## The
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
+  ##
+  Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+
   err_prev = err = eps + 1
   iter = 0
   while(err > eps & iter < max.em.iter){
@@ -66,18 +62,15 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       })
     }
 
-
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
+
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
 
     if(err_prev < err){
       if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
-      if(nrow(SIGMA) <= 6){
-        Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-      }else{
-        Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-      }
+      Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
     }
     err_prev = err
 
@@ -85,7 +78,6 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
 
     iter = iter + 1
-    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
   }
   if(expected){
     list(mu = MU,
