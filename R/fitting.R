@@ -65,6 +65,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
 
+    iter = iter + 1
     if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
 
     if(err_prev < err){
@@ -77,7 +78,6 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     MU = MU + delta
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
 
-    iter = iter + 1
   }
   if(expected){
     list(mu = MU,
