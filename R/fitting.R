@@ -31,11 +31,11 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  E = dm_fit(X)$expected
-  H = ilr_coordinates(E)
+  Ec = dm_fit(X)$expected
+  E = ilr_coordinates(Ec)
 
-  MU = colMeans(H)
-  SIGMA = cov(H)
+  MU = colMeans(E)
+  SIGMA = cov(E)
 
   ##
   ##
