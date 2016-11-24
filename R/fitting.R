@@ -25,13 +25,17 @@ generate_mv_normal_rnd = function(n, dim){
 #' nm_fit(X, verbose = T)
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                  max.em.iter = 100, expected = TRUE, verbose = FALSE){
+                  max.em.iter = 100, expected = TRUE, verbose = FALSE,
+                  delta = 0.65, threshold = 0.5){
 
   if(ncol(X) == 2){
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  Ec = dm_fit(X)$expected
+  repl <- delta * matrix(1, ncol = D, nrow = N) * (threshold/n)
+
+  Ec = X
+  Ec[Ec == 0] = delta * threshold # dm_fit(X)$expected
   E = ilr_coordinates(Ec)
 
   MU = colMeans(E)

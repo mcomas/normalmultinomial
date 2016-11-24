@@ -5,7 +5,8 @@
 \title{Log-ratio normal-multinomial parameters estimation.}
 \usage{
 nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-  max.em.iter = 100, expected = TRUE, verbose = FALSE)
+  max.em.iter = 100, expected = TRUE, verbose = FALSE, delta = 0.65,
+  threshold = 0.5)
 }
 \arguments{
 \item{X}{count data set}
