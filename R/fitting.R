@@ -8,7 +8,7 @@ generate_mv_normal_rnd = function(n, dim){
 }
 
 initialize_with_dm = function(X){
-  E = fit_dm(X)$expected
+  E = dm_fit(X)$expected
   H = ilr_coordinates(E)
   MU = colMeans(H)
   SIGMA = cov(H)
