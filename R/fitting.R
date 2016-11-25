@@ -6,6 +6,15 @@ generate_mv_normal_rnd = function(n, dim){
   }
   return(Z)
 }
+
+initialize_with_dm = function(X){
+  E = fit_dm(X)$expected
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
 #'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
@@ -32,12 +41,11 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  Ec = X
-  Ec[Ec == 0] = delta * threshold # dm_fit(X)$expected
-  E = ilr_coordinates(Ec)
+  init = initialize_with_dm(X)
 
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = cov(E)
+  E = init$H
+  MU = init$MU
+  SIGMA = init$SIGMA
 
   ##
   ##
