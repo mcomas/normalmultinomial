@@ -47,6 +47,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   MU = init$MU
   SIGMA = init$SIGMA
 
+
   ##
   ##
   Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
