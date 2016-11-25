@@ -23,6 +23,14 @@ initialize_with_dmean = function(X){
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
+initialize_with_dsum = function(X){
+  E = X + matrix(colSums(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
 #'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
@@ -43,17 +51,20 @@ initialize_with_dmean = function(X){
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   max.em.iter = 100, expected = TRUE, verbose = FALSE,
-                  delta = 0.65, threshold = 0.5, init = 'dm'){
+                  delta = 0.65, threshold = 0.5, init.method = 'dm'){
 
   if(ncol(X) == 2){
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  if(init == 'dm'){
+  if(init.method == 'dm'){
     init = initialize_with_dm(X)
   }
-  if(init == 'mean'){
+  if(init.method == 'mean'){
     init = initialize_with_dmean(X)
+  }
+  if(init.method == 'sum'){
+    init = initialize_with_dsum(X)
   }
 
   E = init$H
