@@ -36,7 +36,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   Ec[Ec == 0] = delta * threshold # dm_fit(X)$expected
   E = ilr_coordinates(Ec)
 
-  MU = colMeans(E)
+  MU = colMeans(X)
   SIGMA = cov(E)
 
   ##
