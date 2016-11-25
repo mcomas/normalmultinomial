@@ -32,12 +32,12 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  Ec = X
-  Ec[Ec == 0] = delta * threshold # dm_fit(X)$expected
+  Ec = X + delta * threshold # dm_fit(X)$expected
+
   E = ilr_coordinates(Ec)
 
   MU = ilr_coordinates(colMeans(X))
-  SIGMA = cov(E)
+  SIGMA = cov(ilr_coordinates(subset(X, rowSums(X < 3) > 0)))
 
   ##
   ##
