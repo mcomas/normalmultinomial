@@ -9,6 +9,7 @@ generate_mv_normal_rnd = function(n, dim){
 
 initialize_with_dm = function(X){
   E = dm_fit(X)$expected
+
   H = ilr_coordinates(E)
   MU = colMeans(H)
   SIGMA = cov(H)
@@ -17,6 +18,7 @@ initialize_with_dm = function(X){
 
 initialize_with_dmean = function(X){
   E = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
   H = ilr_coordinates(E)
   MU = colMeans(H)
   SIGMA = cov(H)
@@ -25,6 +27,34 @@ initialize_with_dmean = function(X){
 
 initialize_with_dsum = function(X){
   E = X + matrix(colSums(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dapprox = function(X){
+  X.closured = X / rowSums(X)
+  m = colMeans(X.closured)
+  v = apply(X.closured, 2, var)
+  K = ncol(XZ)
+  E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dapprox2 = function(X){
+  XNZ = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+  X.closured = XNZ / rowSums(XNZ)
+  m = colMeans(X.closured)
+  v = apply(X.closured, 2, var)
+  K = ncol(XZ)
+  E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
   H = ilr_coordinates(E)
   MU = colMeans(H)
   SIGMA = cov(H)
@@ -65,6 +95,12 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   }
   if(init.method == 'sum'){
     init = initialize_with_dsum(X)
+  }
+  if(init.method == 'approx'){
+    init = initialize_with_dapprox(X)
+  }
+  if(init.method == 'approx2'){
+    init = initialize_with_dapprox2(X)
   }
 
   E = init$H
