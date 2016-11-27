@@ -14,9 +14,12 @@ X = as.matrix(comp.pos)
 
 ## Repl using normal-multinomial
 set.seed(1)
-fit = nm_fit(X, verbose = T)
+library(parallel)
+cl = makeCluster(detectCores()-2)
+fit = nm_fit(X, verbose = T, parallel.cluster = cl)
 P.nm <- fit$expected
 colnames(P.nm) = colnames(X)
+stopCluster(cl)
 
 ## Repl using dirichlet-multinomial
 fit.dm = dm_fit(X)

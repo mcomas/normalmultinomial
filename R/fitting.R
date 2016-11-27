@@ -1,3 +1,66 @@
+generate_mv_normal_rnd = function(n, dim){
+  if(dim <= 6){
+    Z = matrix(randtoolbox::halton(n, dim = dim, normal = TRUE), ncol=dim)
+  }else{
+    Z = matrix(randtoolbox::sobol(n, dim = dim, normal = TRUE), ncol=dim)
+  }
+  return(Z)
+}
+
+initialize_with_dm = function(X){
+  E = dm_fit(X)$expected
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dmean = function(X){
+  E = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dsum = function(X){
+  E = X + matrix(colSums(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dapprox = function(X){
+  X.closured = X / rowSums(X)
+  m = colMeans(X.closured)
+  v = apply(X.closured, 2, var)
+  K = ncol(XZ)
+  E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_dapprox2 = function(X){
+  XNZ = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+  X.closured = XNZ / rowSums(XNZ)
+  m = colMeans(X.closured)
+  v = apply(X.closured, 2, var)
+  K = ncol(XZ)
+  E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
+
+  H = ilr_coordinates(E)
+  MU = colMeans(H)
+  SIGMA = cov(H)
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
 #'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
@@ -17,33 +80,38 @@
 #' nm_fit(X, verbose = T)
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                  max.em.iter = 100, expected = TRUE, verbose = FALSE){
+                  max.em.iter = 100, expected = TRUE, verbose = FALSE,
+                  delta = 0.65, threshold = 0.5, init.method = 'dm'){
 
   if(ncol(X) == 2){
     return( nm_fit_1d(X, eps, nsim, parallel.cluster, max.em.iter, expected, verbose) )
   }
 
-  MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
-  SIGMA = diag(ncol(X)-1)
+  if(init.method == 'dm'){
+    init = initialize_with_dm(X)
+  }
+  if(init.method == 'mean'){
+    init = initialize_with_dmean(X)
+  }
+  if(init.method == 'sum'){
+    init = initialize_with_dsum(X)
+  }
+  if(init.method == 'approx'){
+    init = initialize_with_dapprox(X)
+  }
+  if(init.method == 'approx2'){
+    init = initialize_with_dapprox2(X)
+  }
 
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(50, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(50, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
-  if(!is.null(parallel.cluster)){
-    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }else{
-    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }
-  E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+  E = init$H
+  MU = init$MU
+  SIGMA = init$SIGMA
+
+
   ##
-  ## The
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
+  ##
+  Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+
   err_prev = err = eps + 1
   iter = 0
   while(err > eps & iter < max.em.iter){
@@ -51,31 +119,36 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
                                   expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      L = parallel::parLapply(parallel.cluster, FIT, function(fit){
+        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      })
     }else{
       FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      L = lapply(FIT, function(fit){
+        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      })
     }
-    E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
     delta = (apply(E, 2, mean)-MU)
     err = sqrt(sum(delta^2))
+
+    iter = iter + 1
+    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+
     if(err_prev < err){
       if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
-      if(nrow(SIGMA) <= 6){
-        Z = matrix(randtoolbox::halton(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-      }else{
-        Z = matrix(randtoolbox::sobol(nsim, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-      }
+      Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
     }
     err_prev = err
+
     MU = MU + delta
-    L = lapply(FIT, function(fit){
-      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-      apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
-    })
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
-    iter = iter + 1
-    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+
   }
   if(expected){
     list(mu = MU,
@@ -88,7 +161,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
          iter = iter)
   }
 }
-#
+
 #
 #
 nm_fit_1d = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
