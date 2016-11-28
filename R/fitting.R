@@ -164,56 +164,48 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 
 #
 #
-nm_fit_1d = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
+f.prob = function(n, k, mu, rho){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(x) sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
+}
+f.m1 = function(n, k, mu, rho){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(x) x * sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
+}
+f.m2 = function(n, k, mu, rho){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(x) x^2 * sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
+}
+
+nm_fit_1d = function(X, eps = 0.00001, parallel.cluster = NULL,
                   max.em.iter = 100, expected = TRUE, verbose = FALSE){
 
   MU = ilr_coordinates(matrix(apply(X/apply(X, 1, sum), 2, sum), nrow=1))[1,]
-  SIGMA = diag(1)
+  SIGMA = 1
 
-  Z = matrix(randtoolbox::halton(50, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
+  N = rowSums(X)
 
-  if(!is.null(parallel.cluster)){
-    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }else{
-    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }
-  E = sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]])))
-  ##
-  ## The
-  Z = matrix(randtoolbox::halton(nsim, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
-
-  err_prev = err = eps + 1
+  err = eps + 1
   iter = 0
   while(err > eps & iter < max.em.iter){
-    if(!is.null(parallel.cluster)){
-      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
-                                function(i)
-                                  expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-    }else{
-      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i]), simplify = FALSE)
-    }
-    E = sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]])))
+    probs = sapply(1:nrow(X), function(i) integrate(f.prob(N[i], X[i,1], MU, 1/SIGMA^2), -Inf, Inf, rel.tol = 10^-8)$value)
+    E = sapply(1:nrow(X), function(i) integrate(f.m1(N[i], X[i,1], MU, 1/SIGMA^2), -Inf, Inf, rel.tol = 10^-8)$value) / probs
+
 
     delta = (mean(E)-MU)
     err = sqrt(sum(delta^2))
-    if(err_prev < err){
-      if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
-      nsim = 2 * nsim
-      Z = matrix(randtoolbox::halton(nsim, dim = 1, normal = TRUE), ncol=nrow(SIGMA))
-    }
-    err_prev = err
+
     MU = MU + delta
-    L = sapply(FIT, function(fit){
-      sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-      mean(fit[[3]][,,sel])
-    })
-    SIGMA = matrix(mean(L) - MU * MU)
+
+    M2 = sapply(1:nrow(X), function(i) integrate(f.m2(N[i], X[i,1], MU, 1/SIGMA^2), -Inf, Inf, rel.tol = 10^-8)$value) / probs
+    SIGMA = sqrt(mean(M2) - MU * MU)
     iter = iter + 1
+
     if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
   }
   if(expected){
-    list(mu = MU,
-         sigma = SIGMA,
+    list(mu = unname(MU),
+         sigma = unname(SIGMA),
          iter = iter,
          expected = inv_ilr_coordinates(matrix(E, ncol=1)))
   }else{
