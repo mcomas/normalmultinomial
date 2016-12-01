@@ -9,8 +9,12 @@ generate_mv_normal_rnd = function(n, dim){
 
 initialize_with_bootstrap = function(X){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-  colMeans(ilr_coordinates(B))
-  N * cov(ilr_coordinates(B))
+
+  MU = colMeans(ilr_coordinates(B))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+  H = ilr_coordinates(nm_expected(X, mu = MU, sigma = SIGMA))
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
 initialize_with_dm = function(X){
@@ -109,7 +113,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     init = initialize_with_dapprox2(X)
   }
   if(init.method == 'bootstrap'){
-    init = initialize_with_dapprox2(X)
+    init = initialize_with_bootstrap(X)
   }
 
   E = init$H
