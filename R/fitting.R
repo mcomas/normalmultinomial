@@ -7,6 +7,12 @@ generate_mv_normal_rnd = function(n, dim){
   return(Z)
 }
 
+initialize_with_bootstrap = function(X){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+  colMeans(ilr_coordinates(B))
+  N * cov(ilr_coordinates(B))
+}
+
 initialize_with_dm = function(X){
   E = dm_fit(X)$expected
 
@@ -100,6 +106,9 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     init = initialize_with_dapprox(X)
   }
   if(init.method == 'approx2'){
+    init = initialize_with_dapprox2(X)
+  }
+  if(init.method == 'bootstrap'){
     init = initialize_with_dapprox2(X)
   }
 
