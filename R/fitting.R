@@ -7,12 +7,23 @@ generate_mv_normal_rnd = function(n, dim){
   return(Z)
 }
 
-initialize_with_bootstrap = function(X){
+initialize_with_bootstrap = function(X, parallel.cluster){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
 
   MU = colMeans(ilr_coordinates(B))
   SIGMA = nrow(X) * cov(ilr_coordinates(B))
-  H = ilr_coordinates(nm_expected(X, mu = MU, sigma = SIGMA))
+
+  if(nrow(SIGMA) <= 6){
+    Z = matrix(randtoolbox::halton(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }else{
+    Z = matrix(randtoolbox::sobol(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }
+  if(!is.null(parallel.cluster)){
+    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }else{
+    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+  }
+  H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
@@ -113,7 +124,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     init = initialize_with_dapprox2(X)
   }
   if(init.method == 'bootstrap'){
-    init = initialize_with_bootstrap(X)
+    init = initialize_with_bootstrap(X, parallel.cluster)
   }
 
   E = init$H
