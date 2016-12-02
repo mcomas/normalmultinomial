@@ -10,7 +10,7 @@ generate_mv_normal_rnd = function(n, dim){
 initialize_with_bootstrap2 = function(X){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
 
-  MU = colMeans(ilr_coordinates(B))
+  MU = ilr_coordinates(colMeans(X))
   SIGMA = nrow(X) * cov(ilr_coordinates(B))
 
   H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
@@ -21,7 +21,7 @@ initialize_with_bootstrap2 = function(X){
 initialize_with_bootstrap = function(X, parallel.cluster){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
 
-  MU = colMeans(ilr_coordinates(B))
+  MU = ilr_coordinates(colMeans(X))
   SIGMA = nrow(X) * cov(ilr_coordinates(B))
 
   if(nrow(SIGMA) <= 6){

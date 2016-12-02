@@ -1,7 +1,7 @@
 Package: normalmultinomial
 Type: Package
 Title: Normal-Multinomial Distribution
-Version: 0.3.22
+Version: 0.3.23
 Author: Marc Comas Cuf\\u00ed <marc.comas@gmail.com>
 Maintainer: Marc Comas Cuf\\u00ed <marc.comas@gmail.com>
 Description: A colletion of tools to simulate samples from a Normal-Multinomial distribution and to
