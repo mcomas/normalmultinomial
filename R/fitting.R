@@ -7,6 +7,17 @@ generate_mv_normal_rnd = function(n, dim){
   return(Z)
 }
 
+initialize_with_bootstrap2 = function(X){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = colMeans(ilr_coordinates(B))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X), byrow = TRUE)
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
 initialize_with_bootstrap = function(X, parallel.cluster){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
 
@@ -125,6 +136,9 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   }
   if(init.method == 'bootstrap'){
     init = initialize_with_bootstrap(X, parallel.cluster)
+  }
+  if(init.method == 'bootstrap2'){
+    init = initialize_with_bootstrap2(X)
   }
 
   E = init$H
