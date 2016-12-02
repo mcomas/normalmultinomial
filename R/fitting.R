@@ -13,7 +13,7 @@ initialize_with_bootstrap2 = function(X){
   MU = colMeans(ilr_coordinates(B))
   SIGMA = nrow(X) * cov(ilr_coordinates(B))
 
-  H = matrix(MU, nrow = nrow(X), ncol = ncol(X), byrow = TRUE)
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
 
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
