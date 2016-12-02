@@ -84,6 +84,7 @@ initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
+
 initialize_with_dm = function(X){
   E = dm_fit(X)$expected
 
@@ -138,6 +139,30 @@ initialize_with_dapprox2 = function(X){
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
+initialize_with_aitchison = function(X){
+  P = colMeans(X)
+  P = P / sum(P)
+  MU = ilr_coordinates(P)
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+
+
+  G = P
+  K = cov(X/rowSums(X))
+
+  TAU = matrix(0, nrow=nrow(K), ncol=ncol(K))
+  tau = function(i,j){
+    K[i,i]/G[i]^2 - 2 * K[i,j]/(G[i]*G[j]) + K[j,j]/G[j]^2 + 1/4 * (K[i,i]/G[i]^2 - K[j,j]/G[j]^2)^2
+  }
+  for(i in 1:nrow(K)){for(j in 1:ncol(K)){ TAU[i,j] = tau(i,j) }}
+  Fn = cbind(diag(1,nrow(K)-1), -1)
+  S = -0.5 * Fn %*% TAU %*% t(Fn)
+  SIGMA = solve(ilr_to_alr(nrow(K))) %*% S %*% t(solve(ilr_to_alr(nrow(K))))
+
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
 #'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
@@ -193,6 +218,12 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   }
   if(init.method == 'bootstrapstep'){
     init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
+  }
+  if(init.method == 'bootstrapstep5'){
+    init = initialize_with_bootstrapstep(X, 5, parallel.cluster)
+  }
+  if(init.method == 'aitchison'){
+    init = initialize_with_aitchison(X)
   }
   E = init$H
   MU = init$MU
