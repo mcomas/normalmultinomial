@@ -18,6 +18,28 @@ initialize_with_bootstrap2 = function(X){
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
+initialize_with_bootstrap3 = function(X){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = ilr_coordinates(colMeans(X))
+  SIGMA = diag(mean(eigen(nrow(X) * cov(ilr_coordinates(B)))$values), ncol(X) - 1)
+
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_bootstrap4 = function(X){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = ilr_coordinates(colMeans(X))
+  SIGMA = diag(exp(mean(log((eigen(nrow(X) * cov(ilr_coordinates(B)))$values)))), ncol(X) - 1)
+
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
 initialize_with_bootstrap = function(X, parallel.cluster){
   B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
 
@@ -36,6 +58,29 @@ initialize_with_bootstrap = function(X, parallel.cluster){
   }
   H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
 
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = ilr_coordinates(colMeans(X))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+
+  if(nrow(SIGMA) <= 6){
+    Z = matrix(randtoolbox::halton(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }else{
+    Z = matrix(randtoolbox::sobol(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }
+  for(s in 1:steps){
+    if(!is.null(parallel.cluster)){
+      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    }else{
+      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    }
+    H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+    SIGMA = cov(H)
+  }
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 
@@ -70,7 +115,7 @@ initialize_with_dapprox = function(X){
   X.closured = X / rowSums(X)
   m = colMeans(X.closured)
   v = apply(X.closured, 2, var)
-  K = ncol(XZ)
+  K = ncol(X)
   E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
 
   H = ilr_coordinates(E)
@@ -84,7 +129,7 @@ initialize_with_dapprox2 = function(X){
   X.closured = XNZ / rowSums(XNZ)
   m = colMeans(X.closured)
   v = apply(X.closured, 2, var)
-  K = ncol(XZ)
+  K = ncol(X)
   E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
 
   H = ilr_coordinates(E)
@@ -140,7 +185,15 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   if(init.method == 'bootstrap2'){
     init = initialize_with_bootstrap2(X)
   }
-
+  if(init.method == 'bootstrap3'){
+    init = initialize_with_bootstrap3(X)
+  }
+  if(init.method == 'bootstrap4'){
+    init = initialize_with_bootstrap4(X)
+  }
+  if(init.method == 'bootstrapstep'){
+    init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
+  }
   E = init$H
   MU = init$MU
   SIGMA = init$SIGMA
