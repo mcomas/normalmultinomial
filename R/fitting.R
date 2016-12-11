@@ -183,7 +183,8 @@ initialize_with_aitchison = function(X){
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   max.em.iter = 100, expected = TRUE, verbose = FALSE,
-                  delta = 0.65, threshold = 0.5, init.method = 'dm'){
+                  delta = 0.65, threshold = 0.5, init.method = 'dm',
+                  development = FALSE){
 
   if(ncol(X) == 2){
     return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
@@ -240,18 +241,24 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     if(!is.null(parallel.cluster)){
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
-                                  expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+                                  expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
       E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      # L = parallel::parLapply(parallel.cluster, FIT, function(fit){
+      #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+      #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      # })
       L = parallel::parLapply(parallel.cluster, FIT, function(fit){
-        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+        apply(fit[[3]], 1:2, mean)
       })
     }else{
-      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo3(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
       E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      # L = lapply(FIT, function(fit){
+      #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
+      #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+      # })
       L = lapply(FIT, function(fit){
-        sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-        apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
+        apply(fit[[3]], 1:2, mean)
       })
     }
 
@@ -259,10 +266,10 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     err = sqrt(sum(delta^2))
 
     iter = iter + 1
-    if(verbose){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+    if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
 
     if(err_prev < err){
-      if(verbose){ cat(sprintf('nsim: %d\n', 2*nsim)) }
+      if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
       Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
     }
@@ -271,6 +278,17 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     MU = MU + delta
     SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
 
+  }
+  if(development){
+    return(
+      list(
+        mu = MU,
+        sigma = SIGMA,
+        iter = iter,
+        expected = inv_ilr_coordinates(E),
+        fit = FIT
+      )
+    )
   }
   if(expected){
     list(mu = MU,
@@ -353,7 +371,6 @@ nm_fit_1d = function(X, eps = 0.00001, parallel.cluster = NULL,
 #' fit = nm_fit(X, verbose = T)
 #' P = nm_expected(X, fit$mu, fit$sigma)
 #' head(P)
-#' @export
 nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
   if(nrow(sigma) <= 6){
     Z = matrix(randtoolbox::halton(nsim, dim = nrow(sigma), normal = TRUE), ncol=nrow(sigma))
@@ -379,7 +396,6 @@ nm_expected = function(X, mu, sigma, nsim = 1000, parallel.cluster = NULL){
 #' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
 #' dm_fit(X)
 #' @export
-#' @export
 dm_fit = function(X, expected = TRUE, eps = 10e-5, max.iter = 5000){
   res = c_dm_fit(X, eps, max.iter)
   res[[1]] = as.numeric(res[[1]])
@@ -404,8 +420,6 @@ dm_fit = function(X, expected = TRUE, eps = 10e-5, max.iter = 5000){
 #' fit = dm_fit(X)
 #' P = dm_expected(X, fit$alpha)
 #' head(P)
-#' @export
-#' @export
 dm_expected = function(X, alpha){
   X = t(alpha+t(X))
   X/rowSums(X)

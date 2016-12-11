@@ -284,6 +284,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// expectedMonteCarlo
+Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp);
+RcppExport SEXP normalmultinomial_expectedMonteCarlo(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP mu_expSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_exp(mu_expSEXP);
+    rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo(x, mu_ilr, sigma_ilr, Z, mu_exp));
+    return rcpp_result_gen;
+END_RCPP
+}
 // expectedMetropolis
 Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim);
 RcppExport SEXP normalmultinomial_expectedMetropolis(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP nsimSEXP) {
@@ -354,9 +369,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// expectedMonteCarlo
-Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
-RcppExport SEXP normalmultinomial_expectedMonteCarlo(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
+// expectedMonteCarlo_prev
+Rcpp::List expectedMonteCarlo_prev(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z);
+RcppExport SEXP normalmultinomial_expectedMonteCarlo_prev(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -364,7 +379,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
-    rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo(x, mu_ilr, sigma_ilr, Z));
+    rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo_prev(x, mu_ilr, sigma_ilr, Z));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -379,21 +394,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
     rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo2(x, mu_ilr, sigma_ilr, Z));
-    return rcpp_result_gen;
-END_RCPP
-}
-// expectedMonteCarlo3
-Rcpp::List expectedMonteCarlo3(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp);
-RcppExport SEXP normalmultinomial_expectedMonteCarlo3(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP mu_expSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu_exp(mu_expSEXP);
-    rcpp_result_gen = Rcpp::wrap(expectedMonteCarlo3(x, mu_ilr, sigma_ilr, Z, mu_exp));
     return rcpp_result_gen;
 END_RCPP
 }

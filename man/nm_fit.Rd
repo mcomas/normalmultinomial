@@ -6,7 +6,7 @@
 \usage{
 nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   max.em.iter = 100, expected = TRUE, verbose = FALSE, delta = 0.65,
-  threshold = 0.5, init.method = "dm")
+  threshold = 0.5, init.method = "dm", development = FALSE)
 }
 \arguments{
 \item{X}{count data set}

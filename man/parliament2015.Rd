@@ -5,10 +5,7 @@
 \alias{parliament2015}
 \title{Results for parliament catalan elections by municipality and municipality variables}
 \format{A data frame with 947 rows and 34 variables:
-<<<<<<< HEAD:man/parlament2015.Rd
-=======
 
->>>>>>> 583229ad45d088648b12b5e9001eeb0851877c1e:man/parliament2015.Rd
 \describe{
 \item{code}{Municipality code}
 \item{name}{Munipality name}
