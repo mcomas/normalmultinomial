@@ -1,8 +1,5 @@
-load('data/Pigs.Posture.RData')
-
 library(zCompositions)
 library(normalmultinomial)
-source('tests/biplots.R')
 ## Load data
 
 load("data/Pigs.Posture.RData")
@@ -38,7 +35,6 @@ P.user <- cmultRepl(as.matrix(comp.pos),
                              byrow = T),
                     s=rep(sum(fit.dm$alpha),nrow(comp.pos)))
 
-
 with0 = ifelse(X[,5] == 0, 'with 0', 'without 0')
 g = paste(dat.pos$Treatment, with0, sep='-')
 
@@ -60,11 +56,11 @@ ggbiplot(princomp(clr_coordinates(P.gbm)),groups=g) +
 
 ggbiplot(princomp(clr_coordinates(P.dm)),groups=g) +
   coord_fixed(xlim = c(-2.5,2.5), ylim=c(-2.5,2.5)) +
-  ggtitle('Dirichlet-Multinomial')
+  ggtitle('Dirichlet-Multinomial (dm)')
 
 ggbiplot(princomp(clr_coordinates(P.user)),groups=g) +
   coord_fixed(xlim = c(-2.5,2.5), ylim=c(-2.5,2.5)) +
-  ggtitle('Dirichlet-Multinomial \n(multiplicative replacement)')
+  ggtitle('GBM (with dm priori)')
 
 ggbiplot(princomp(clr_coordinates(P.nm)),groups=g) +
   coord_fixed(xlim = c(-2.5,2.5), ylim=c(-2.5,2.5)) +
@@ -72,3 +68,16 @@ ggbiplot(princomp(clr_coordinates(P.nm)),groups=g) +
 
 # Parece que los CoDa ayudan a distinguir mejor los grupos.
 
+#clr-biplot de forma
+
+ggbiplot(princomp(clr_coordinates(P.dm)),groups=g, scale = 0) +
+  coord_fixed(xlim = c(-5,5), ylim=c(-5,5)) +
+  ggtitle('Dirichlet-Multinomial (dm)')
+
+ggbiplot(princomp(clr_coordinates(P.user)),groups=g, scale = 0) +
+  coord_fixed(xlim = c(-5,5), ylim=c(-5,5)) +
+  ggtitle('GBM (with dm priori)')
+
+ggbiplot(princomp(clr_coordinates(P.nm)),groups=g, scale = 0) +
+  coord_fixed(xlim = c(-5,5), ylim=c(-5,5)) +
+  ggtitle('Normal-Multinomial')
