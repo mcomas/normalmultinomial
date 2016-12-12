@@ -186,9 +186,9 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   delta = 0.65, threshold = 0.5, init.method = 'dm',
                   development = FALSE){
 
-  if(ncol(X) == 2){
-    return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
-  }
+  #if(ncol(X) == 2){
+  #  return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
+  #}
 
   if(init.method == 'dm'){
     init = initialize_with_dm(X)
@@ -242,7 +242,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
                                   expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-      E = t(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      E = t(matrix(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))), nrow=length(MU)))
       # L = parallel::parLapply(parallel.cluster, FIT, function(fit){
       #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
       #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
@@ -252,7 +252,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
       })
     }else{
       FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-      E = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+      E = t(matrix(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))), nrow=length(MU)))
       # L = lapply(FIT, function(fit){
       #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
       #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
@@ -301,19 +301,27 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
          iter = iter)
   }
 }
+f.prob.approx = function(n, k, mu, sigma){
+  q = k/n
+  1/(sqrt(2*pi) * sigma) * exp(-(1/sqrt(2)*log(q/(1-q))-mu)^2/(2*sigma^2)) *
+    1/(sqrt(2)*q*(1-q)) / n
+}
+f.prob = function(n, k, mu, sigma){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(h) 1/(sqrt(2*pi) * sigma) *
+    exp(K - n * log(exp(h/sqrt(2))+exp(-h/sqrt(2))) -(h-mu)^2/(2*sigma^2) + h*(2*k-n)/sqrt(2))
+}
+f.m1 = function(n, k, mu, sigma){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(h) h * 1/(sqrt(2*pi) * sigma) *
+    exp(K - n * log(exp(h/sqrt(2))+exp(-h/sqrt(2))) -(h-mu)^2/(2*sigma^2) + h*(2*k-n)/sqrt(2))
+}
+f.m2 = function(n, k, mu, sigma){
+  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
+  function(h) h^2 * 1/(sqrt(2*pi) * sigma) *
+    exp(K - n * log(exp(h/sqrt(2))+exp(-h/sqrt(2))) -(h-mu)^2/(2*sigma^2) + h*(2*k-n)/sqrt(2))
+}
 
-f.prob = function(n, k, mu, rho){
-  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
-  function(x) sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
-}
-f.m1 = function(n, k, mu, rho){
-  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
-  function(x) sqrt(2) * x * sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
-}
-f.m2 = function(n, k, mu, rho){
-  K = lgamma(n+1) - lgamma(k+1) - lgamma(n-k+1)
-  function(x) 2 * x^2 * sqrt(rho/pi) * exp(-rho * mu^2/2) * exp(K - rho*x^2 + (sqrt(2) * mu * rho + 2 * k - n) * x - n * log(exp(x)+exp(-x)))
-}
 
 nm_fit_1d = function(X, eps = 0.00001, parallel.cluster = NULL,
                      max.em.iter = 100, expected = TRUE, verbose = FALSE){
@@ -326,10 +334,16 @@ nm_fit_1d = function(X, eps = 0.00001, parallel.cluster = NULL,
   err = eps + 1
   iter = 0
   while(err > eps & iter < max.em.iter){
-    probs = sapply(1:nrow(X), function(i) integrate(f.prob(N[i], X[i,1], MU, 1/SIGMA), -Inf, Inf, rel.tol = 10^-8)$value)
-    E = sapply(1:nrow(X), function(i) integrate(f.m1(N[i], X[i,1], MU, 1/SIGMA),
+    probs = sapply(1:nrow(X), function(i) integrate(f.prob(N[i], X[i,1], MU, SIGMA), -Inf, Inf, rel.tol = 10^-8)$value)
+    E = sapply(1:nrow(X), function(i) integrate(f.m1(N[i], X[i,1], MU, SIGMA),
                                                 -Inf, Inf, rel.tol = 10^-8)$value) / probs
-    M2 = sapply(1:nrow(X), function(i) integrate(f.m2(N[i], X[i,1], MU, 1/SIGMA), -Inf, Inf)$value) / probs
+    M2 = sapply(1:nrow(X), function(i) integrate(f.m2(N[i], X[i,1], MU, SIGMA), -Inf, Inf)$value) / probs
+
+    sel = apply(X, 1, min) > 10000
+    probs.aprox = f.prob.approx(N, X[,1], MU, SIGMA)
+    probs[sel] = probs.aprox[sel]
+    E[sel] = 1/sqrt(2) * log(X[sel,1]/X[sel,2])
+    M2[sel] = E[sel] * E[sel]
 
     delta = (mean(E)-MU)
     err = sqrt(sum(delta^2))
