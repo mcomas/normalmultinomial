@@ -136,7 +136,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     init = initialize_with_dapprox(X)
   }
   if(init.method == 'bootstrap'){
-    init = initialize_with_bootstrap(X, parallel.cluster)
+    init = initialize_with_bootstrap(X)
   }
   if(init.method == 'bootstrapstep'){
     init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
