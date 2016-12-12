@@ -6,85 +6,10 @@ generate_mv_normal_rnd = function(n, dim){
   }
   return(Z)
 }
-
-initialize_with_bootstrap2 = function(X){
-  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = nrow(X) * cov(ilr_coordinates(B))
-
-  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
-
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-initialize_with_bootstrap3 = function(X){
-  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = diag(mean(eigen(nrow(X) * cov(ilr_coordinates(B)))$values), ncol(X) - 1)
-
-  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
-
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-initialize_with_bootstrap4 = function(X){
-  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = diag(exp(mean(log((eigen(nrow(X) * cov(ilr_coordinates(B)))$values)))), ncol(X) - 1)
-
-  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
-
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-initialize_with_bootstrap = function(X, parallel.cluster){
-  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = nrow(X) * cov(ilr_coordinates(B))
-
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
-  if(!is.null(parallel.cluster)){
-    FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }else{
-    FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-  }
-  H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
-
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
-  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
-
-  MU = ilr_coordinates(colMeans(X))
-  SIGMA = nrow(X) * cov(ilr_coordinates(B))
-
-  if(nrow(SIGMA) <= 6){
-    Z = matrix(randtoolbox::halton(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }else{
-    Z = matrix(randtoolbox::sobol(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
-  }
-  for(s in 1:steps){
-    if(!is.null(parallel.cluster)){
-      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-    }else{
-      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
-    }
-    H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
-    SIGMA = cov(H)
-  }
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-
+#'
+#' Initialization using the expected values obtained
+#' from a Dirichlet-Multinomial fitting
+#'
 initialize_with_dm = function(X){
   E = dm_fit(X)$expected
 
@@ -93,25 +18,10 @@ initialize_with_dm = function(X){
   SIGMA = cov(H)
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
-
-initialize_with_dmean = function(X){
-  E = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
-
-  H = ilr_coordinates(E)
-  MU = colMeans(H)
-  SIGMA = cov(H)
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
-initialize_with_dsum = function(X){
-  E = X + matrix(colSums(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
-
-  H = ilr_coordinates(E)
-  MU = colMeans(H)
-  SIGMA = cov(H)
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
+#'
+#' The expected values are obtained from the solution
+#' of an approximation to the parameters of a Dirichlet model (see Dirichlet estimation article)
+#'
 initialize_with_dapprox = function(X){
   X.closured = X / rowSums(X)
   m = colMeans(X.closured)
@@ -124,21 +34,10 @@ initialize_with_dapprox = function(X){
   SIGMA = cov(H)
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
-
-initialize_with_dapprox2 = function(X){
-  XNZ = X + matrix(colMeans(X), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
-  X.closured = XNZ / rowSums(XNZ)
-  m = colMeans(X.closured)
-  v = apply(X.closured, 2, var)
-  K = ncol(X)
-  E = X + matrix(m * exp(1/(K-1) * sum(log(m*(1-m)/v-1))), ncol=ncol(X), nrow=nrow(X), byrow = TRUE)
-
-  H = ilr_coordinates(E)
-  MU = colMeans(H)
-  SIGMA = cov(H)
-  list(H = H, MU = MU, SIGMA = SIGMA)
-}
-
+#' Approximation to Mu and Sigma parameters obtained
+#' from raw data as proposed by Aitchison.
+#' Expected values are initiated using the obtained Mu
+#'
 initialize_with_aitchison = function(X){
   P = colMeans(X)
   P = P / sum(P)
@@ -164,6 +63,47 @@ initialize_with_aitchison = function(X){
   list(H = H, MU = MU, SIGMA = SIGMA)
 }
 #'
+#' A bootstrap method is used to obtained estimates of Mu and Sigma
+#' The expected values are initialized using vector Mu
+#'
+initialize_with_bootstrap = function(X){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = ilr_coordinates(colMeans(X))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+
+  H = matrix(MU, nrow = nrow(X), ncol = ncol(X)-1, byrow = TRUE)
+
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+#'
+#' A bootstrap method is used to obtained estimates of Mu and Sigma
+#' The expected values are calculated using one iteration of EM algorithm
+#'
+initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
+  B = t(replicate(1000, colMeans(X[sample(1:nrow(X),nrow(X), replace=TRUE),])))
+
+  MU = ilr_coordinates(colMeans(X))
+  SIGMA = nrow(X) * cov(ilr_coordinates(B))
+
+  if(nrow(SIGMA) <= 6){
+    Z = matrix(randtoolbox::halton(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }else{
+    Z = matrix(randtoolbox::sobol(1000, dim = nrow(SIGMA), normal = TRUE), ncol=nrow(SIGMA))
+  }
+  for(s in 1:steps){
+    if(!is.null(parallel.cluster)){
+      FIT = parallel::parApply(parallel.cluster, X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    }else{
+      FIT = apply(X, 1, expectedMonteCarlo2, MU, SIGMA, Z)
+    }
+    H = t(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))))
+    SIGMA = cov(H)
+  }
+  list(H = H, MU = MU, SIGMA = SIGMA)
+}
+
+#'
 #' Log-ratio normal-multinomial parameters estimation.
 #'
 #' The parameters mu and sigma are expressed with respect
@@ -186,42 +126,20 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   delta = 0.65, threshold = 0.5, init.method = 'dm',
                   development = FALSE){
 
-  #if(ncol(X) == 2){
-  #  return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
-  #}
-
+  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'boostrapstep', 'aitchison')){
+    stop(sprintf("Method %s not available", init.method))
+  }
   if(init.method == 'dm'){
     init = initialize_with_dm(X)
   }
-  if(init.method == 'mean'){
-    init = initialize_with_dmean(X)
-  }
-  if(init.method == 'sum'){
-    init = initialize_with_dsum(X)
-  }
-  if(init.method == 'approx'){
+  if(init.method == 'dapprox'){
     init = initialize_with_dapprox(X)
-  }
-  if(init.method == 'approx2'){
-    init = initialize_with_dapprox2(X)
   }
   if(init.method == 'bootstrap'){
     init = initialize_with_bootstrap(X, parallel.cluster)
   }
-  if(init.method == 'bootstrap2'){
-    init = initialize_with_bootstrap2(X)
-  }
-  if(init.method == 'bootstrap3'){
-    init = initialize_with_bootstrap3(X)
-  }
-  if(init.method == 'bootstrap4'){
-    init = initialize_with_bootstrap4(X)
-  }
   if(init.method == 'bootstrapstep'){
     init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
-  }
-  if(init.method == 'bootstrapstep5'){
-    init = initialize_with_bootstrapstep(X, 5, parallel.cluster)
   }
   if(init.method == 'aitchison'){
     init = initialize_with_aitchison(X)
@@ -229,7 +147,6 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   E = init$H
   MU = init$MU
   SIGMA = init$SIGMA
-
 
   ##
   ##
@@ -307,42 +224,20 @@ nm_fit_fast = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                        delta = 0.65, threshold = 0.5, init.method = 'dm',
                        development = FALSE){
 
-  #if(ncol(X) == 2){
-  #  return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
-  #}
-
+  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'boostrapstep', 'aitchison')){
+    stop(sprintf("Method %s not available", init.method))
+  }
   if(init.method == 'dm'){
     init = initialize_with_dm(X)
   }
-  if(init.method == 'mean'){
-    init = initialize_with_dmean(X)
-  }
-  if(init.method == 'sum'){
-    init = initialize_with_dsum(X)
-  }
-  if(init.method == 'approx'){
+  if(init.method == 'dapprox'){
     init = initialize_with_dapprox(X)
-  }
-  if(init.method == 'approx2'){
-    init = initialize_with_dapprox2(X)
   }
   if(init.method == 'bootstrap'){
     init = initialize_with_bootstrap(X, parallel.cluster)
   }
-  if(init.method == 'bootstrap2'){
-    init = initialize_with_bootstrap2(X)
-  }
-  if(init.method == 'bootstrap3'){
-    init = initialize_with_bootstrap3(X)
-  }
-  if(init.method == 'bootstrap4'){
-    init = initialize_with_bootstrap4(X)
-  }
   if(init.method == 'bootstrapstep'){
     init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
-  }
-  if(init.method == 'bootstrapstep5'){
-    init = initialize_with_bootstrapstep(X, 5, parallel.cluster)
   }
   if(init.method == 'aitchison'){
     init = initialize_with_aitchison(X)
