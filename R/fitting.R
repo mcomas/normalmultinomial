@@ -126,7 +126,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                   delta = 0.65, threshold = 0.5, init.method = 'dm',
                   development = FALSE){
 
-  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'bootsrapstep', 'aitchison')){
+  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'bootstrapstep', 'aitchison')){
     stop(sprintf("Method %s not available", init.method))
   }
   if(init.method == 'dm'){
