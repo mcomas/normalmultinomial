@@ -100,6 +100,16 @@ expectedMonteCarlo <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
 }
 
 #' @export
+expectedMonteCarloFast <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
+    .Call('normalmultinomial_expectedMonteCarloFast', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp)
+}
+
+#' @export
+expectedMonteCarloFirstMoment <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
+    .Call('normalmultinomial_expectedMonteCarloFirstMoment', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp)
+}
+
+#' @export
 expectedMetropolis <- function(x, mu_ilr, sigma_ilr, nsim = 100L) {
     .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, nsim)
 }

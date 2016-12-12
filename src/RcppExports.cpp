@@ -299,6 +299,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// expectedMonteCarloFast
+Rcpp::List expectedMonteCarloFast(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp);
+RcppExport SEXP normalmultinomial_expectedMonteCarloFast(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP mu_expSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_exp(mu_expSEXP);
+    rcpp_result_gen = Rcpp::wrap(expectedMonteCarloFast(x, mu_ilr, sigma_ilr, Z, mu_exp));
+    return rcpp_result_gen;
+END_RCPP
+}
+// expectedMonteCarloFirstMoment
+Rcpp::List expectedMonteCarloFirstMoment(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp);
+RcppExport SEXP normalmultinomial_expectedMonteCarloFirstMoment(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP ZSEXP, SEXP mu_expSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_ilr(mu_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type sigma_ilr(sigma_ilrSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type mu_exp(mu_expSEXP);
+    rcpp_result_gen = Rcpp::wrap(expectedMonteCarloFirstMoment(x, mu_ilr, sigma_ilr, Z, mu_exp));
+    return rcpp_result_gen;
+END_RCPP
+}
 // expectedMetropolis
 Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim);
 RcppExport SEXP normalmultinomial_expectedMetropolis(SEXP xSEXP, SEXP mu_ilrSEXP, SEXP sigma_ilrSEXP, SEXP nsimSEXP) {

@@ -301,6 +301,114 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
          iter = iter)
   }
 }
+#' @export
+nm_fit_fast = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
+                       max.em.iter = 100, expected = TRUE, verbose = FALSE,
+                       delta = 0.65, threshold = 0.5, init.method = 'dm',
+                       development = FALSE){
+
+  #if(ncol(X) == 2){
+  #  return( nm_fit_1d(X, eps, parallel.cluster, max.em.iter, expected, verbose) )
+  #}
+
+  if(init.method == 'dm'){
+    init = initialize_with_dm(X)
+  }
+  if(init.method == 'mean'){
+    init = initialize_with_dmean(X)
+  }
+  if(init.method == 'sum'){
+    init = initialize_with_dsum(X)
+  }
+  if(init.method == 'approx'){
+    init = initialize_with_dapprox(X)
+  }
+  if(init.method == 'approx2'){
+    init = initialize_with_dapprox2(X)
+  }
+  if(init.method == 'bootstrap'){
+    init = initialize_with_bootstrap(X, parallel.cluster)
+  }
+  if(init.method == 'bootstrap2'){
+    init = initialize_with_bootstrap2(X)
+  }
+  if(init.method == 'bootstrap3'){
+    init = initialize_with_bootstrap3(X)
+  }
+  if(init.method == 'bootstrap4'){
+    init = initialize_with_bootstrap4(X)
+  }
+  if(init.method == 'bootstrapstep'){
+    init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
+  }
+  if(init.method == 'bootstrapstep5'){
+    init = initialize_with_bootstrapstep(X, 5, parallel.cluster)
+  }
+  if(init.method == 'aitchison'){
+    init = initialize_with_aitchison(X)
+  }
+  E = init$H
+  MU = init$MU
+  SIGMA = init$SIGMA
+
+
+  ##
+  ##
+  Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+
+  err_prev = err = eps + 1
+  iter = 0
+  while(err > eps & iter < max.em.iter){
+    if(!is.null(parallel.cluster)){
+      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
+                                function(i)
+                                  expectedMonteCarloFast(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(matrix(parallel::parSapply(parallel.cluster, FIT, function(fit) fit[[2]]), nrow=length(MU)))
+      L = parallel::parLapply(parallel.cluster, FIT, function(fit) fit[[3]])
+    }else{
+      FIT = sapply(1:nrow(X), function(i) expectedMonteCarloFast(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
+      E = t(matrix(sapply(FIT, function(fit) fit[[2]]), nrow=length(MU)))
+      L = lapply(FIT, function(fit) fit[[3]])
+    }
+
+    delta = colMeans(E)-MU
+    err = sqrt(sum(delta^2))
+
+    iter = iter + 1
+    if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+
+    if(err_prev < err){
+      if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
+      nsim = 2 * nsim
+      Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+    }
+    err_prev = err
+
+    MU = MU + delta
+    SIGMA = Reduce(`+`, L) / nrow(X)  - MU %*% t(MU)
+  }
+  if(development){
+    return(
+      list(
+        mu = MU,
+        sigma = SIGMA,
+        iter = iter,
+        expected = inv_ilr_coordinates(E),
+        fit = FIT
+      )
+    )
+  }
+  if(expected){
+    list(mu = MU,
+         sigma = SIGMA,
+         iter = iter,
+         expected = inv_ilr_coordinates(E))
+  }else{
+    list(mu = MU,
+         sigma = SIGMA,
+         iter = iter)
+  }
+}
 f.prob.approx = function(n, k, mu, sigma){
   q = k/n
   1/(sqrt(2*pi) * sigma) * exp(-(1/sqrt(2)*log(q/(1-q))-mu)^2/(2*sigma^2)) *
