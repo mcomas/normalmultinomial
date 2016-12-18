@@ -5,8 +5,8 @@
 \title{Log-ratio normal-multinomial parameters estimation.}
 \usage{
 nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-  max.em.iter = 100, expected = TRUE, verbose = FALSE, delta = 0.65,
-  threshold = 0.5, init.method = "dm", development = FALSE)
+  max.em.iter = 100, expected = TRUE, verbose = FALSE,
+  init.method = "dm", development = FALSE)
 }
 \arguments{
 \item{X}{count data set}
@@ -22,6 +22,13 @@ nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 \item{expected}{if TRUE the expected probabilities are returned (default:TRUE)}
 
 \item{verbose}{show information during estimation}
+
+\item{init.method}{how to initiate the method (default 'dm' initiating with
+dirichlet-multinomial estimation). Another options are: 'aitchison',
+'bootstrap'. Initiating with aproximation from raw data and using bootstrapping respectively.
+For stability, we recommend to use 'dm' method.}
+
+\item{development}{show diagnostic messages}
 }
 \value{
 A list with parameters mu and sigma and the number of iterations before convergence

@@ -116,115 +116,21 @@ initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
 #' @param max.em.iter maximum number of steps allowed in the EM-algorithm
 #' @param expected if TRUE the expected probabilities are returned (default:TRUE)
 #' @param verbose show information during estimation
+#' @param init.method how to initiate the method (default 'dm' initiating with
+#' dirichlet-multinomial estimation). Another options are: 'aitchison',
+#' 'bootstrap'. Initiating with aproximation from raw data and using bootstrapping respectively.
+#' For stability, we recommend to use 'dm' method.
+#' @param development show diagnostic messages
 #' @return A list with parameters mu and sigma and the number of iterations before convergence
 #' @examples
 #' X = rnormalmultinomial(100, 100, rep(0,4), diag(4))
 #' nm_fit(X, verbose = T)
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                  max.em.iter = 100, expected = TRUE, verbose = FALSE,
-                  delta = 0.65, threshold = 0.5, init.method = 'dm',
-                  development = FALSE){
-
-  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'bootstrapstep', 'aitchison')){
-    stop(sprintf("Method %s not available", init.method))
-  }
-  if(init.method == 'dm'){
-    init = initialize_with_dm(X)
-  }
-  if(init.method == 'dapprox'){
-    init = initialize_with_dapprox(X)
-  }
-  if(init.method == 'bootstrap'){
-    init = initialize_with_bootstrap(X)
-  }
-  if(init.method == 'bootstrapstep'){
-    init = initialize_with_bootstrapstep(X, 1, parallel.cluster)
-  }
-  if(init.method == 'aitchison'){
-    init = initialize_with_aitchison(X)
-  }
-  E = init$H
-  MU = init$MU
-  SIGMA = init$SIGMA
-
-  ##
-  ##
-  Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
-
-  err_prev = err = eps + 1
-  iter = 0
-  while(err > eps & iter < max.em.iter){
-    if(!is.null(parallel.cluster)){
-      FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
-                                function(i)
-                                  expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-      E = t(matrix(parallel::parSapply(parallel.cluster, FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))), nrow=length(MU)))
-      # L = parallel::parLapply(parallel.cluster, FIT, function(fit){
-      #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-      #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
-      # })
-      L = parallel::parLapply(parallel.cluster, FIT, function(fit){
-        apply(fit[[3]], 1:2, mean)
-      })
-    }else{
-      FIT = sapply(1:nrow(X), function(i) expectedMonteCarlo(X[i,], MU, SIGMA, Z, E[i,]), simplify = FALSE)
-      E = t(matrix(sapply(FIT, function(fit) colMeans(stats::na.omit(fit[[2]]))), nrow=length(MU)))
-      # L = lapply(FIT, function(fit){
-      #   sel = apply(fit[[3]], 3, function(m) all(is.finite(m)))
-      #   apply(fit[[3]][,,sel], 1:2, sum) / length(sel)
-      # })
-      L = lapply(FIT, function(fit){
-        apply(fit[[3]], 1:2, mean)
-      })
-    }
-
-    delta = (apply(E, 2, mean)-MU)
-    err = sqrt(sum(delta^2))
-
-    iter = iter + 1
-    if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
-
-    if(err_prev < err){
-      if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
-      nsim = 2 * nsim
-      Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
-    }
-    err_prev = err
-
-    MU = MU + delta
-    SIGMA = Reduce(`+`, L) / nrow(X) - MU %*% t(MU)
-
-  }
-  if(development){
-    return(
-      list(
-        mu = MU,
-        sigma = SIGMA,
-        iter = iter,
-        expected = inv_ilr_coordinates(E),
-        fit = FIT
-      )
-    )
-  }
-  if(expected){
-    list(mu = MU,
-         sigma = SIGMA,
-         iter = iter,
-         expected = inv_ilr_coordinates(E))
-  }else{
-    list(mu = MU,
-         sigma = SIGMA,
-         iter = iter)
-  }
-}
-#' @export
-nm_fit_fast = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
                        max.em.iter = 100, expected = TRUE, verbose = FALSE,
-                       delta = 0.65, threshold = 0.5, init.method = 'dm',
-                       development = FALSE){
+                       init.method = 'dm', development = FALSE){
 
-  if(! init.method %in% c('dm', 'dapprox', 'bootstrap', 'boostrapstep', 'aitchison')){
+  if(! init.method %in% c('dm', 'bootstrap', 'aitchison')){
     stop(sprintf("Method %s not available", init.method))
   }
   if(init.method == 'dm'){
@@ -253,6 +159,7 @@ nm_fit_fast = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 
   err_prev = err = eps + 1
   iter = 0
+  iter_n = 0
   while(err > eps & iter < max.em.iter){
     if(!is.null(parallel.cluster)){
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
@@ -270,9 +177,11 @@ nm_fit_fast = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     err = sqrt(sum(delta^2))
 
     iter = iter + 1
+    iter_n = iter_n + 1
     if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
 
-    if(err_prev < err){
+    if(err_prev < err & iter_n > 5){
+      iter_n = 0
       if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
       Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
