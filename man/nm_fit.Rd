@@ -5,7 +5,7 @@
 \title{Log-ratio normal-multinomial parameters estimation.}
 \usage{
 nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-  max.em.iter = 100, expected = TRUE, verbose = FALSE,
+  max.em.iter = 100, min.em.iter = 10, expected = TRUE, verbose = FALSE,
   init.method = "dm", development = FALSE)
 }
 \arguments{
@@ -18,6 +18,8 @@ nm_fit(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 \item{parallel.cluster}{parallel Socket Cluster created with function @makeCluster}
 
 \item{max.em.iter}{maximum number of steps allowed in the EM-algorithm}
+
+\item{min.em.iter}{minimum number of steps before allowing to double the number of iterations}
 
 \item{expected}{if TRUE the expected probabilities are returned (default:TRUE)}
 

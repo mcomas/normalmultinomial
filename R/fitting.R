@@ -114,6 +114,7 @@ initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
 #' @param nsim number of simulations used in the E-step
 #' @param parallel.cluster parallel Socket Cluster created with function @makeCluster
 #' @param max.em.iter maximum number of steps allowed in the EM-algorithm
+#' @param min.em.iter minimum number of steps before allowing to double the number of iterations
 #' @param expected if TRUE the expected probabilities are returned (default:TRUE)
 #' @param verbose show information during estimation
 #' @param init.method how to initiate the method (default 'dm' initiating with
@@ -127,7 +128,7 @@ initialize_with_bootstrapstep = function(X, steps = 1, parallel.cluster){
 #' nm_fit(X, verbose = T)
 #' @export
 nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
-                       max.em.iter = 100, expected = TRUE, verbose = FALSE,
+                       max.em.iter = 100, min.em.iter = 10, expected = TRUE, verbose = FALSE,
                        init.method = 'dm', development = FALSE){
 
   if(! init.method %in% c('dm', 'bootstrap', 'aitchison')){
@@ -180,7 +181,7 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
     iter_n = iter_n + 1
     if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
 
-    if(err_prev < err & iter_n > 5){
+    if(err_prev < err & iter_n > min.em.iter){
       iter_n = 0
       if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
       nsim = 2 * nsim
