@@ -4,12 +4,12 @@ library(normalmultinomial)
 if(!exists('build')) build = 'N_01000-n_00050-s_00001-seed_00001'
 pattern_build = "N_([0-9]+)-n_([0-9]+)-s_([0-9]+)-seed_([0-9]+)*"
 
-load(sprintf('datasets/dataset-%s.RData', build))
+load(sprintf('data/dataset-%s.RData', build))
 
 eps = 0.0005*length(p)
 
 cl = makeCluster(3)
-fit_nm1 <- nm_fit(XZ, verbose = TRUE, eps = eps, nsim = 100, parallel.cluster = cl, init = 'mean')
+fit_nm1 <- nm_fit(XZ, verbose = TRUE, eps = 0.0001, max.em.iter=500, nsim = 100, parallel.cluster = cl, init = 'aitchison')
 stopCluster(cl)
 
 cl = makeCluster(3)

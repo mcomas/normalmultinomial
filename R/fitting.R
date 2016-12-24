@@ -158,10 +158,14 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
   ##
   Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
 
-  err_prev = err = eps + 1
+  err = eps + 1
   iter = 0
   iter_n = 0
+  verror = rep(0, min.em.iter)
   while(err > eps & iter < max.em.iter){
+    iter = iter + 1
+    iter_n = iter_n + 1
+
     if(!is.null(parallel.cluster)){
       FIT = parallel::parSapply(parallel.cluster, 1:nrow(X),
                                 function(i)
@@ -176,18 +180,23 @@ nm_fit = function(X, eps = 0.001, nsim = 1000, parallel.cluster = NULL,
 
     delta = colMeans(E)-MU
     err = sqrt(sum(delta^2))
+    verror[-min.em.iter] = verror[-1]
+    verror[min.em.iter] = err
 
-    iter = iter + 1
-    iter_n = iter_n + 1
-    if(verbose | development){ cat(sprintf('Step %d, error %f\n', iter, err)) }
+    if(verbose | development){ cat(sprintf('Step %d, error %f', iter, err)) }
 
-    if(err_prev < err & iter_n > min.em.iter){
-      iter_n = 0
-      if(verbose | development){ cat(sprintf('nsim: %d\n', 2*nsim)) }
-      nsim = 2 * nsim
-      Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+    if(iter_n > min.em.iter){
+      x = 1:min.em.iter
+      max.trend = confint(lm(verror~x))['x',2]
+      if(verbose | development){ cat(sprintf('| Trend %f', max.trend)) }
+      if(max.trend > 0){
+        iter_n = 0
+        if(verbose | development){ cat(sprintf('| nsim: %d', 2*nsim)) }
+        nsim = 2 * nsim
+        Z = generate_mv_normal_rnd(nsim, nrow(SIGMA))
+      }
     }
-    err_prev = err
+    if(verbose | development){ cat('\n') }
 
     MU = MU + delta
     SIGMA = Reduce(`+`, L) / nrow(X)  - MU %*% t(MU)
