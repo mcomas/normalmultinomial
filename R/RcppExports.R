@@ -110,42 +110,12 @@ expectedMonteCarloFirstMoment <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
 }
 
 #' @export
-expectedMetropolis <- function(x, mu_ilr, sigma_ilr, nsim = 100L) {
-    .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, nsim)
+expectedMetropolis <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
+    .Call('normalmultinomial_expectedMetropolis', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp)
 }
 
 #' @export
-expectedMoment1_alr <- function(x, mu, sigma, Z) {
-    .Call('normalmultinomial_expectedMoment1_alr', PACKAGE = 'normalmultinomial', x, mu, sigma, Z)
-}
-
-#' @export
-expectedMoment1 <- function(x, mu_ilr, sigma_ilr, Z) {
-    .Call('normalmultinomial_expectedMoment1', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
-}
-
-#' @export
-expectedMoment2spherical <- function(x, mu_ilr, sigma_ilr, Z) {
-    .Call('normalmultinomial_expectedMoment2spherical', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
-}
-
-#' @export
-expectedMoment2 <- function(x, mu_ilr, sigma_ilr, Z) {
-    .Call('normalmultinomial_expectedMoment2', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
-}
-
-#' @export
-expectedMonteCarlo_prev <- function(x, mu_ilr, sigma_ilr, Z) {
-    .Call('normalmultinomial_expectedMonteCarlo_prev', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
-}
-
-#' @export
-expectedMonteCarlo2 <- function(x, mu_ilr, sigma_ilr, Z) {
-    .Call('normalmultinomial_expectedMonteCarlo2', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z)
-}
-
-#' @export
-expectedMonteCarlo4 <- function(x, mu_ilr, sigma_ilr, Z, mu_exp, sigma_exp) {
-    .Call('normalmultinomial_expectedMonteCarlo4', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp, sigma_exp)
+expectedMonteCarlo_withoutAV <- function(x, mu_ilr, sigma_ilr, Z, mu_exp) {
+    .Call('normalmultinomial_expectedMonteCarlo_withoutAV', PACKAGE = 'normalmultinomial', x, mu_ilr, sigma_ilr, Z, mu_exp)
 }
 

@@ -223,9 +223,11 @@ Rcpp::List expectedMonteCarloFirstMoment(arma::vec x, arma::vec mu_ilr, arma::ma
 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim = 100){
+Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp){
   int K = x.size();
   int k = K - 1;
+
+  int nsim = Z.n_rows;
 
   arma::mat ILR_TO_ALR = ilr_to_alr(K);
   arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
@@ -234,7 +236,7 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::vec mu = ILR_TO_ALR * mu_ilr;
   arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
 
-  arma::mat Z1 = arma::randn(nsim, k).t();
+  arma::mat Z1 = Z.t();
   arma::vec U = arma::randu(nsim);
 
   arma::mat inv_sigma = inv_sympd(sigma);
@@ -277,3 +279,80 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   }
   return Rcpp::List::create(M0, M1, M2);
 }
+
+//' @export
+// [[Rcpp::export]]
+Rcpp::List expectedMonteCarlo_withoutAV(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp){
+
+  int K = x.size();
+  int k = K - 1;
+  int nsim = Z.n_rows;
+
+  arma::mat ILR_TO_ALR = ilr_to_alr(K);
+  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
+  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
+
+  arma::vec mu = ILR_TO_ALR * mu_ilr;
+  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
+  arma::mat inv_sigma = inv_sympd(sigma);
+
+  arma::mat sampling_mu =  (ILR_TO_ALR * mu_exp).t();
+
+  arma::mat sampling_sigma = sigma;
+  arma::mat inv_sampling_sigma = inv_sigma;
+
+  arma::mat sampling_sigma_chol = arma::chol(sampling_sigma);
+
+  arma::mat Z1 = Z;
+
+  arma::mat SAMPLING_MU = arma::repmat(sampling_mu, nsim, 1);
+  arma::mat Ap1 = SAMPLING_MU + Z1 * sampling_sigma_chol;
+
+  arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
+  double mult_const = mvf_multinom_const(x);
+  arma::mat D = inv_sigma * (mu-sampling_mu.t());
+
+  arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
+
+  //Rcpp::Rcout << loglik1 << std::endl;
+  //Rcpp::Rcout << loglik2 << std::endl;
+
+  double cmax = max(loglik1);
+
+  arma::vec lik1 = exp(loglik1 - cmax);
+
+  //Rcpp::Rcout << lik1 << std::endl;
+  //Rcpp::Rcout << lik2 << std::endl;
+
+  //lik1.replace(arma::datum::nan, 0);
+  //lik2.replace(arma::datum::nan, 0);
+
+
+  // lik_st initialized to ones in case lik1 is too small
+  arma::vec lik1_st = lik1 / mean(lik1);
+
+  //lik1_st.replace(arma::datum::nan, 1);
+  //lik2_st.replace(arma::datum::nan, 1);
+
+  //Rcpp::Rcout << lik1_st << std::endl;
+
+  arma::vec M0 = arma::vec(nsim);
+  arma::mat M1 = arma::mat(nsim, k);
+  arma::cube M2 = arma::cube(k,k, nsim);
+
+  M0 =  lik1;
+  for(int i = 0;i < k; i++){
+    arma::mat C1 = Ap1.col(i) % lik1_st;
+    M1.col(i) = C1;
+    for(int j = 0;j < k; j++){
+      M2.tube(i,j) = C1 % Ap1.col(j);
+    }
+  }
+
+  for(int s=0; s<nsim;s++){
+    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
+    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
+  }
+  return Rcpp::List::create(M0, M1, M2);
+}
+
