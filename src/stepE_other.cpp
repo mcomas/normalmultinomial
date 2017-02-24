@@ -11,62 +11,7 @@
 
 using namespace Rcpp;
 
-//' @export
-// [[Rcpp::export]]
-Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, int nsim = 100){
-  int K = x.size();
-  int k = K - 1;
 
-  arma::mat ILR_TO_ALR = ilr_to_alr(K);
-  arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
-  arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
-
-  arma::vec mu = ILR_TO_ALR * mu_ilr;
-  arma::mat sigma = ILR_TO_ALR * sigma_ilr * ILR_TO_ALR.t();
-
-  arma::mat Z1 = arma::randn(nsim, k).t();
-  arma::vec U = arma::randu(nsim);
-
-  arma::mat inv_sigma = inv_sympd(sigma);
-
-  arma::mat Ap1 = arma::mat(k, nsim);
-  Ap1.col(0) = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
-
-  arma::mat M0 = arma::mat(nsim, 1);
-  for(int i=1;i<nsim;i++){
-    arma::vec x_proposal = Ap1.col(i-1) + Z1.col(i-1);
-
-    double f_prev = exp( mvf(Ap1.col(i-1), mu, inv_sigma, x) );
-    double f_next = exp( mvf(x_proposal, mu, inv_sigma, x) );
-    double alpha = f_next / f_prev;
-    if(1 < alpha){
-      Ap1.col(i) = x_proposal;
-      M0(i,0) = f_next;
-    }else{
-      if(U(i) < alpha){
-        Ap1.col(i) = x_proposal;
-        M0(i,0) = f_next;
-      }else{
-        Ap1.col(i)=  Ap1.col(i-1);
-        M0(i,0) = f_prev;
-      }
-    }
-  }
-
-  arma::mat M1 = arma::mat(nsim, k);
-  arma::cube M2 = arma::cube(k,k, nsim);
-  for(int i = 0;i < k; i++){
-    M1.col(i) = Ap1.row(i).t();
-    for(int j = 0;j < k; j++){
-      M2.tube(i,j) = Ap1.row(i).t() % Ap1.row(j).t();
-    }
-  }
-  for(int s=0; s<nsim;s++){
-    M1.row(s) = M1.row(s) * ALR_TO_ILR_trans;
-    M2.slice(s) = ALR_TO_ILR * M2.slice(s) * ALR_TO_ILR_trans;
-  }
-  return Rcpp::List::create(M0, M1, M2);
-}
 
 //' @export
 // [[Rcpp::export]]
