@@ -44,11 +44,13 @@ Rcpp::List expectedMonteCarlo(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
 
   arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
-  double mult_const = mvf_multinom_const(x);
+  //double mult_const = mvf_multinom_const(x);
   arma::mat D = inv_sigma * (mu-sampling_mu.t());
 
-  arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
-  arma::vec loglik2 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D;
+  //arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
+  //arma::vec loglik2 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D;
+  arma::vec loglik1 = mu12(0,0) + mvf_multinom_mult(Ap1, x) + Ap1 * D;
+  arma::vec loglik2 = mu12(0,0) + mvf_multinom_mult(Ap2, x) + Ap2 * D;
 
   //Rcpp::Rcout << loglik1 << std::endl;
   //Rcpp::Rcout << loglik2 << std::endl;
@@ -126,11 +128,13 @@ Rcpp::List expectedMonteCarloFast(arma::vec x, arma::vec mu_ilr, arma::mat sigma
   arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
 
   arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
-  double mult_const = mvf_multinom_const(x);
+  //double mult_const = mvf_multinom_const(x);
   arma::mat D = inv_sigma * (mu-sampling_mu.t());
 
-  arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
-  arma::vec loglik2 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D;
+  //arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
+  //arma::vec loglik2 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D;
+  arma::vec loglik1 = mu12(0,0) + mvf_multinom_mult(Ap1, x) + Ap1 * D;
+  arma::vec loglik2 = mu12(0,0) + mvf_multinom_mult(Ap2, x) + Ap2 * D;
 
   double cmax = std::max(max(loglik1), max(loglik2));
 
@@ -242,7 +246,7 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   arma::mat inv_sigma = inv_sympd(sigma);
 
   arma::mat Ap1 = arma::mat(k, nsim);
-  Ap1.col(0) = mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
+  Ap1.col(0) = mu_exp; //mvf_maximum(x, mu, inv_sigma, 1e-8, 100, 0.66);
 
   arma::mat M0 = arma::mat(nsim, 1);
   for(int i=1;i<nsim;i++){
