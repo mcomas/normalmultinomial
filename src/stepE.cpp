@@ -268,9 +268,10 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   for(int i=1;i<nsim;i++){
     arma::vec x_proposal = Ap1.col(i-1) + Z1.col(i-1);
 
-    double f_prev = exp( mvf2(Ap1.col(i-1), mu, inv_sigma, x) );
-    double f_next = exp( mvf2(x_proposal, mu, inv_sigma, x) );
-    double alpha = f_next / f_prev;
+    double f_prev = mvf2(Ap1.col(i-1), mu, inv_sigma, x);
+    double f_next = mvf2(x_proposal, mu, inv_sigma, x);
+    double cmean = 0.5 * f_next + 0.5*f_prev;
+    double alpha = exp(f_next-cmean) / exp(f_prev-cmean);
     if(1 < alpha){
       Ap1.col(i) = x_proposal;
       M0(i,0) = f_next;
