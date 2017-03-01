@@ -225,6 +225,22 @@ Rcpp::List expectedMonteCarloFirstMoment(arma::vec x, arma::vec mu_ilr, arma::ma
   return Rcpp::List::create(M0, M1);
 }
 
+double mvf2(arma::vec a, arma::vec mu, arma::mat inv_sigma, arma::vec x){
+  int k = a.size();
+  int K = k +1;
+
+
+  arma::mat log_norm =  -0.5 * (a-mu).t() * inv_sigma * (a-mu);
+
+  double norm = log_norm(0);
+
+  double kappa = 1;
+  for(int i = 0; i < k; i++) kappa += exp(a[i]);
+  double multinom = -x[k] * log(kappa);
+  for(int i = 0; i < k; i++) multinom += x[i] * ( a[i] - log(kappa));
+
+  return(norm + multinom);
+}
 //' @export
 // [[Rcpp::export]]
 Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr, arma::mat Z, arma::vec mu_exp){
@@ -252,8 +268,8 @@ Rcpp::List expectedMetropolis(arma::vec x, arma::vec mu_ilr, arma::mat sigma_ilr
   for(int i=1;i<nsim;i++){
     arma::vec x_proposal = Ap1.col(i-1) + Z1.col(i-1);
 
-    double f_prev = exp( mvf(Ap1.col(i-1), mu, inv_sigma, x) );
-    double f_next = exp( mvf(x_proposal, mu, inv_sigma, x) );
+    double f_prev = exp( mvf2(Ap1.col(i-1), mu, inv_sigma, x) );
+    double f_next = exp( mvf2(x_proposal, mu, inv_sigma, x) );
     double alpha = f_next / f_prev;
     if(1 < alpha){
       Ap1.col(i) = x_proposal;

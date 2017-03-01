@@ -1,14 +1,21 @@
-SEED = 2
-D = 20
-NSIM = 100
+SEED = 10
+D = 50
+NSIM = 1000
+SIZE = 200
 
 set.seed(SEED)
+
 library(normalmultinomial)
 library(randtoolbox)
 
-x = as.numeric(rmultinomial(1, D*10, 1:(D+1)/sum(1:(D+1))))
+#x = as.numeric(rmultinomial(1, D*10, 1:(D+1)/sum(1:(D+1))))
 MU = ilr_coordinates(1:(D+1))
 SIGMA = diag(1, D)
+
+SIM = rnormalmultinomial(1, size = SIZE, MU, SIGMA, probs = TRUE)
+
+x = SIM$counts[1,]
+p.real = SIM$probs[1,]
 
 MU_EXP = MU
 
@@ -88,14 +95,14 @@ M2.sd = lapply(res, function(ires){
 })
 
 #M1.est
-M1.est
+dist(t(cbind(M1.est, 'Real' = ilr_coordinates(p.real))))
 
 #M1.est
 apply(M1.sd, 2, range)
 
-dist(t(M1.est))
+#dist(t(M1.est))
 
-plot(MU, ylim=c(-2,2))
+plot(ilr_coordinates(p.real), ylim=c(-2,2))
 points(M1.est[,1], col = 2)
 points(M1.est[,2], col = 3)
 points(M1.est[,3], col = 4)
