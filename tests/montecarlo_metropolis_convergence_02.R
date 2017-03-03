@@ -1,7 +1,7 @@
 SEED = 10
-D = 100
-NSIM = 500
-SIZE = 200
+D = 10
+NSIM = 10000
+SIZE = 1000
 
 set.seed(SEED)
 

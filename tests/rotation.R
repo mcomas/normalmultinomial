@@ -19,6 +19,30 @@ t(ilr_basis(4)/ilr_basis(4)[4,3])[D:1,(D+1):1]
 
 v1 = c(1,2,3,4)
 v2 = c(3,5,2,4)
+rotation = function(x,y){
+  u=x/sqrt(sum(x^2))
+
+  v=y-sum(u*y)*u
+  v=v/sqrt(sum(v^2))
+
+  cost=sum(x*y)/sqrt(sum(x^2))/sqrt(sum(y^2))
+
+  sint=sqrt(1-cost^2);
+
+  diag(length(x)) - u %*% t(u) - v %*% t(v) +
+    cbind(u,v) %*% matrix(c(cost,-sint,sint,cost), 2) %*% t(cbind(u,v))
+}
+
+
+x=c(2,4,5,3,6)
+y=c(6,2,0,1,7)
+
+# Same norm
+sqrt(sum(x^2))
+sqrt(sum(y^2))
+
+Rx2y = rotation(x,y)
+x %*% Rx2y
 
 
 
