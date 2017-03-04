@@ -11,7 +11,7 @@ SIGMA_EXP = 1
 
 set.seed(1)
 fit0 <- expectedMonteCarlo(x, MU, SIGMA,
-                           Z = matrix(rnorm(NSIM), ncol=1),
+                           Z = matrix(rnorm(NSIM/2), ncol=1),
                            mu_exp = MU_EXP)
 
 set.seed(1)
@@ -33,7 +33,7 @@ m2.metropolis = c(fit2[[3]])
 
 pdf('figures/montecarlo_comparison.pdf', width = 8.3, height = 3.8)
 par(mfrow=c(1,2))
-plot(cumsum(m1.pseudo)/seq_along(m1.pseudo),
+plot(rep(cumsum(m1.pseudo)/seq_along(m1.pseudo), each=2),
      type='l', xlab='Iterations', ylab = 'Estimation',
      main='First moment', ylim =  MU_EXP + c(-1,1) * 0.1)
 lines(cumsum(m1.withoutAV)/seq_along(m1.withoutAV), col='blue')
@@ -44,7 +44,7 @@ legend('topright', c('Pseudo generation', 'Without AV', 'Metropolis'),
        col=c('black', 'blue', 'green'), bty = 'n', lty=1, cex = 0.8)
 
 
-plot(cumsum(m2.pseudo)/seq_along(m2.pseudo),
+plot(rep(cumsum(m2.pseudo)/seq_along(m2.pseudo), each=2),
      type='l', xlab='Iterations', ylab = 'Estimation',
      main='Second moment', ylim = SIGMA_EXP + c(-1,1) * 0.15)
 lines(cumsum(m2.withoutAV)/seq_along(m2.withoutAV), col='blue')
@@ -60,7 +60,7 @@ res = list()
 set.seed(1)
 res[['Pseudo generation']] = replicate(500, sapply(
   expectedMonteCarlo(x, MU, SIGMA,
-                     Z = matrix(rnorm(NSIM), ncol=1),
+                     Z = matrix(rnorm(NSIM)/2, ncol=1),
                      mu_exp = MU_EXP),
   mean))
 set.seed(1)

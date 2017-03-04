@@ -32,7 +32,7 @@ rotation = function(x,y){
   diag(length(x)) - u %*% t(u) - v %*% t(v) +
     cbind(u,v) %*% matrix(c(cost,-sint,sint,cost), 2) %*% t(cbind(u,v))
 }
-
+rotation(1,-1)
 
 x=c(2,4,5,3,6)
 y=c(6,2,0,1,7)
