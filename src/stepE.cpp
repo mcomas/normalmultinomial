@@ -110,6 +110,8 @@ Rcpp::List expectedMonteCarloFast(arma::vec x, arma::vec mu_ilr, arma::mat sigma
   int k = K - 1;
   int nsim = Z.n_rows;
 
+  arma::mat Simplex = ilr_basis(K).t();
+
   arma::mat ILR_TO_ALR = ilr_to_alr(K);
   arma::mat ALR_TO_ILR = inv(ILR_TO_ALR);
   arma::mat ALR_TO_ILR_trans = ALR_TO_ILR.t();
@@ -125,41 +127,37 @@ Rcpp::List expectedMonteCarloFast(arma::vec x, arma::vec mu_ilr, arma::mat sigma
 
   arma::mat sampling_sigma_chol = arma::chol(sampling_sigma);
 
-  arma::mat Z1 = Z;
-  arma::mat Z2 = -Z1;
-
   arma::mat SAMPLING_MU = arma::repmat(sampling_mu, nsim, 1);
-  arma::mat Ap1 = SAMPLING_MU + Z1 * sampling_sigma_chol;
-  arma::mat Ap2 = SAMPLING_MU + Z2 * sampling_sigma_chol;
-
   arma::mat mu12 = (sampling_mu * inv_sigma * sampling_mu.t() - mu.t() * inv_sigma * mu)/2;
-  //double mult_const = mvf_multinom_const(x);
   arma::mat D = inv_sigma * (mu-sampling_mu.t());
-
-  //arma::vec loglik1 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap1, x) + Ap1 * D;
-  //arma::vec loglik2 = mu12(0,0) + mult_const + mvf_multinom_mult(Ap2, x) + Ap2 * D;
-  arma::vec loglik1 = mu12(0,0) + mvf_multinom_mult(Ap1, x) + Ap1 * D;
-  arma::vec loglik2 = mu12(0,0) + mvf_multinom_mult(Ap2, x) + Ap2 * D;
-
-  double cmax = std::max(max(loglik1), max(loglik2));
-
-  arma::vec lik1 = exp(loglik1 - cmax);
-  arma::vec lik2 = exp(loglik2 - cmax);
-
-  arma::vec lik1_st = lik1 / mean(lik1);
-  arma::vec lik2_st = lik2 / mean(lik2);
 
   double M0 = 0;
   arma::vec M1 = arma::vec(k);
   arma::mat M2 = arma::mat(k,k);
+  M1.zeros();M2.zeros();
 
-  M0 =  mean((lik1 + lik2) / 2);
-  for(int i = 0;i < k; i++){
-    arma::vec C1 = Ap1.col(i) % lik1_st;
-    arma::vec C2 = Ap2.col(i) % lik2_st;
-    M1(i) = mean((C1 + C2) / 2);
-    for(int j = 0;j < k; j++){
-      M2(i,j) = mean((C1 % Ap1.col(j) + C2 % Ap2.col(j)) / 2);
+  for(int v=0; v<K; v++){
+    arma::mat Ap = SAMPLING_MU + Z * sampling_sigma_chol;
+    arma::vec loglik = mu12(0,0) + mvf_multinom_mult(Ap, x) + Ap * D;
+    double cmax = max(loglik);
+
+    arma::vec lik = exp(loglik - cmax);
+    arma::vec lik_st = lik / mean(lik);
+
+    M0 += mean(lik / K);
+    for(int i = 0;i < k; i++){
+      arma::vec C = Ap.col(i) % lik_st;
+      M1(i) += mean(C / K);
+      for(int j = 0;j < k; j++){
+        M2(i,j) += mean(C % Ap.col(j) / K);
+      }
+    }
+    // Rotating through simplex vertices
+    if(K == 2){
+      Z = -Z;
+    }else{
+      arma::mat R = rotation(Simplex.col( (v+1) % K), Simplex.col(v));
+      Z = Z * R;
     }
   }
 
